@@ -3846,7 +3846,7 @@ function getQtyLose(r) {
    - "5 Agustus 2026" (nama bulan Indonesia/Inggris)
    - Fallback: native Date parsing
    Return null kalau tidak bisa di-parse (baris itu diabaikan dari agregasi mingguan). */
-function parseGenericDate(s) {
+function parseGenericDate(s, mdy) {
   if (!s) return null;
   const str = s.toString().trim();
   if (!str) return null;
@@ -3859,7 +3859,14 @@ function parseGenericDate(s) {
   m = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
   if (m) {
     const yr = m[3].length===2 ? 2000+parseInt(m[3],10) : parseInt(m[3],10);
-    return new Date(yr, parseInt(m[2],10)-1, parseInt(m[1],10));
+    let a = parseInt(m[1],10), b = parseInt(m[2],10);
+    /* mdy=true: sheet Lose Sales diekspor format US (m/d/yyyy), mis. 9/12/2026 = 12 Sep.
+       Kalau salah satu bagian >12, urutan pasti; kalau ambigu ikuti flag mdy. */
+    let day = a, mon = b;
+    if (a > 12) { day = a; mon = b; }
+    else if (b > 12) { day = b; mon = a; }
+    else if (mdy) { day = b; mon = a; }
+    return new Date(yr, mon-1, day);
   }
 
   /* "5 Agustus 2026" / "5 August 2026" */
@@ -3905,7 +3912,7 @@ const INDO_MONTHS_TITLE = ['Januari','Februari','Maret','April','Mei','Juni','Ju
 function computeBulanEff(r) {
   const rawBulan = (r[COL.bulan||'BULAN']||'').trim();
   if (!COL.tanggal) return rawBulan;
-  const d = parseGenericDate(r[COL.tanggal]);
+  const d = parseGenericDate(r[COL.tanggal], true);
   if (!d) return rawBulan;
   return INDO_MONTHS_TITLE[d.getMonth()];
 }
@@ -8302,7 +8309,7 @@ function renderWeeklyChart() {
   let hasAnyLoseDate = false;
   if (COL.tanggal) {
     filteredLoseRows.forEach(r => {
-      const d = parseGenericDate(r[COL.tanggal]);
+      const d = parseGenericDate(r[COL.tanggal], true);
       if (!d) return;
       const lose = getLose(r);
       if (!lose) return;
