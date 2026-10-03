@@ -8923,7 +8923,7 @@ function it3Calc() {
 }
 
 function itSyncBasisUI() {
-  const b = window._it3Basis || 'akhir';
+  const b = window._it3Basis || 'rata';
   const on  = 'background:var(--accent);color:#0d0d0f;font-weight:700;';
   const off = 'background:transparent;color:var(--muted);font-weight:400;';
   const a = document.getElementById('it-basis-akhir'), r = document.getElementById('it-basis-rata');
@@ -8936,7 +8936,7 @@ function itSetBasis(b) { window._it3Basis = b; itSyncBasisUI(); itRender(); }
 function itRender() {
   if (!itReady || !it3.built) return;
   const R = it3Calc(), bl = R.bl, nBulan = bl.length;
-  const basis = window._it3Basis || 'akhir';
+  const basis = window._it3Basis || 'rata';
   const badge = document.getElementById('it-mode');
   if (badge) {
     badge.style.display = 'inline-block';
@@ -9036,7 +9036,7 @@ function itRenderTable(R, basis, avgM, avgInventory, grandCogs, grandTurnover, g
   rows.push(`<tr style="background:rgba(255,255,255,.04);font-weight:700;">
     <td style="${tdB}font-weight:700;color:var(--accent)">PERIODE</td>
     <td style="${tdR}font-weight:700;">${fmtRpFull(grandCogs)}</td>
-    <td style="${tdR}font-weight:700;"><span style="color:var(--muted);font-size:9px;font-weight:400;">rata-rata </span>${fmtRpFull(avgInventory)}</td>
+    <td style="${tdR}font-weight:700;">${rata ? '<span style="color:var(--muted);font-weight:400;">—</span>' : '<span style="color:var(--muted);font-size:9px;font-weight:400;">rata-rata </span>' + fmtRpFull(avgInventory)}</td>
     ${rata ? `<td style="${tdR}font-weight:700;">${fmtRpFull(avgInventory)}</td>` : ''}
     <td style="${tdR}">${turnBadge(grandTurnover)}</td>
     <td style="${tdR}font-weight:700;">${grandDIO != null ? grandDIO + ' hari' : '—'}</td>
@@ -9189,7 +9189,7 @@ function it3SegMon(R) {
   } else {
     it3.store.forEach(x => { if (bl.has(x.b) && (stF ? x.s === stF : sel.outlet.has(x.s)) && act(x.k)) put(x.g, x.b, x.cogs, x.oh + x.od, x.awal); });
   }
-  const basis = window._it3Basis || 'akhir', n = R.bl.length, rows = [];
+  const basis = window._it3Basis || 'rata', n = R.bl.length, rows = [];
   IT_SEG_ORDER.forEach(sg => {
     const m = per[sg]; if (!m) return;
     let cogs = 0, avg = 0;
@@ -9248,7 +9248,7 @@ function itSegMonitorHtml(R, rows) {
       <div style="display:flex;gap:6px;align-items:center;">${lbl('Store:')}${storeSel}</div>
     </div>`;
   const period = n > 1 ? `${R.first} – ${R.last} (${n} bulan)` : R.first;
-  const basisTxt = (window._it3Basis || 'akhir') === 'rata' ? 'Rata-rata (awal+akhir)' : 'Akhir bulan';
+  const basisTxt = (window._it3Basis || 'rata') === 'rata' ? 'Rata-rata (awal+akhir)' : 'Akhir bulan';
   const levelTxt = useTotal ? 'Level TOTAL (incl. DC, WIP, OD ke DC)' : 'Level STORE (OH + OD store saja' + (stF ? ' · ' + stF : '') + ')';
   const body = rows.map((r, i) => {
     const c = IT_SEG_COLOR[r.sg] || '#888';
@@ -9300,7 +9300,7 @@ function it3StoreMon(R) {
     const z = (m[x.b] = m[x.b] || {cogs:0, akhir:0, awal:0});
     z.cogs += x.cogs; z.akhir += x.oh + x.od; z.awal += x.awal;
   });
-  const basis = window._it3Basis || 'akhir', n = R.bl.length, rows = [];
+  const basis = window._it3Basis || 'rata', n = R.bl.length, rows = [];
   Object.keys(per).forEach(s => {
     const m = per[s]; let cogs = 0, avg = 0;
     R.bl.forEach(b => { if (m[b]) cogs += m[b].cogs; });
@@ -9363,7 +9363,7 @@ function itStoreMonitorHtml(R, rows) {
     </tr>`;
   }).join('');
   const period = n > 1 ? `${R.first} – ${R.last} (${n} bulan)` : R.first;
-  const basisTxt = (window._it3Basis || 'akhir') === 'rata' ? 'Rata-rata (awal+akhir)' : 'Akhir bulan';
+  const basisTxt = (window._it3Basis || 'rata') === 'rata' ? 'Rata-rata (awal+akhir)' : 'Akhir bulan';
   return `
     <div class="cc" style="margin-top:14px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px;">
@@ -9489,7 +9489,7 @@ function it3WarnaMon(R, ctx) {
     const z = (o.m[x.b] = o.m[x.b] || { cogs: 0, akhir: 0, awal: 0 });
     z.cogs += x.cogs; z.akhir += inv; z.awal += x.awal;
   });
-  const basis = window._it3Basis || 'akhir', n = R.bl.length, rows = [];
+  const basis = window._it3Basis || 'rata', n = R.bl.length, rows = [];
   Object.keys(per).forEach(key => {
     const o = per[key], m = o.m; let cogs = 0, avg = 0;
     R.bl.forEach(b => { if (m[b]) cogs += m[b].cogs; });
@@ -9542,7 +9542,7 @@ function itWarnaTable(R, ctx) {
   const bar = (p, color) => `<div style="position:absolute;left:0;top:3px;bottom:3px;width:${Math.max(0, Math.min(100, p)).toFixed(1)}%;background:${color};opacity:.16;border-radius:0 4px 4px 0;pointer-events:none;"></div>`;
   const c = '#47c8ff';
   const period = n > 1 ? `${R.first} – ${R.last} (${n} bulan)` : R.first;
-  const basisTxt = (window._it3Basis || 'akhir') === 'rata' ? 'Rata-rata (awal+akhir)' : 'Akhir bulan';
+  const basisTxt = (window._it3Basis || 'rata') === 'rata' ? 'Rata-rata (awal+akhir)' : 'Akhir bulan';
   const levelTxt = useTotal ? 'Level TOTAL (incl. DC, WIP, OD ke DC)' : 'Level STORE (OH + OD store saja' + (stF ? ' · ' + stF : '') + ')';
   const body = shown.map((r, i) => `<tr style="${i % 2 ? 'background:rgba(255,255,255,.02);' : ''}">
       ${showW ? `<td style="${tdL}">${r.g === 'TIGALAPAN' ? itEsc(r.w) : '<span style="color:var(--muted);font-weight:400;">—</span>'}</td>
