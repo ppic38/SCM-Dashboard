@@ -1707,9 +1707,27 @@ tr:hover td{background:var(--surface2);}
         <span id="it-lbl-outlet">Semua Store</span>
         <i class="ti ti-chevron-down qf-caret"></i>
       </div>
+            <div class="qf-div"></div>
+      <div class="qf-pill" id="it-pill-seg" onclick="itToggleDD('seg',event)">
+        <i class="ti ti-category"></i>
+        <span id="it-lbl-seg">Semua Segmen</span>
+        <i class="ti ti-chevron-down qf-caret"></i>
+      </div>
+      <div class="qf-pill" id="it-pill-kat" onclick="itToggleDD('kat',event)">
+        <i class="ti ti-tags"></i>
+        <span id="it-lbl-kat">Semua Kategori</span>
+        <i class="ti ti-chevron-down qf-caret"></i>
+      </div>
       <button class="qf-pill" id="it-reset" onclick="itResetFilter()" style="display:none;border-color:rgba(255,107,53,.4);color:#ff6b35;">
         <i class="ti ti-x"></i> Reset
       </button>
+      <div class="qf-div"></div>
+      <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;">Basis:</span>
+      <div style="display:flex;background:var(--bg);border:1px solid var(--border);border-radius:100px;padding:2px;flex-shrink:0;">
+        <button id="it-basis-akhir" onclick="itSetBasis('akhir')" title="COGS ÷ inventory akhir bulan (tampilan sebelumnya)" style="font-family:var(--font-mono);font-size:10px;padding:4px 10px;border:none;border-radius:100px;cursor:pointer;white-space:nowrap;">Akhir bulan</button>
+        <button id="it-basis-rata" onclick="itSetBasis('rata')" title="COGS ÷ rata-rata (awal+akhir) — sama dengan Excel ITO_FINAL" style="font-family:var(--font-mono);font-size:10px;padding:4px 10px;border:none;border-radius:100px;cursor:pointer;white-space:nowrap;">Rata-rata</button>
+      </div>
+      <span id="it-mode" style="display:none;font-family:var(--font-mono);font-size:10px;padding:4px 10px;border-radius:100px;border:1px solid var(--border);white-space:nowrap;"></span>
     </div>
 
     <!-- Dropdowns (outside page-scroll so they overlay correctly) -->
@@ -1733,6 +1751,26 @@ tr:hover td{background:var(--surface2);}
       </div>
       <div class="qf-list" id="it-list-outlet"></div>
     </div>
+    <div class="qf-dd" id="it-dd-seg">
+      <div class="qf-dd-hdr">
+        <span class="qf-dd-ttl">Segmen</span>
+        <div class="qf-dd-acts">
+          <button class="qf-dd-act qf-dd-act-all" onclick="itDDAll('seg',true)">Semua</button>
+          <button class="qf-dd-act qf-dd-act-clear" onclick="itDDAll('seg',false)">Hapus</button>
+        </div>
+      </div>
+      <div class="qf-list" id="it-list-seg"></div>
+    </div>
+    <div class="qf-dd" id="it-dd-kat">
+      <div class="qf-dd-hdr">
+        <span class="qf-dd-ttl">Kategori</span>
+        <div class="qf-dd-acts">
+          <button class="qf-dd-act qf-dd-act-all" onclick="itDDAll('kat',true)">Semua</button>
+          <button class="qf-dd-act qf-dd-act-clear" onclick="itDDAll('kat',false)">Hapus</button>
+        </div>
+      </div>
+      <div class="qf-list" id="it-list-kat"></div>
+    </div>
 
     <div class="page-scroll">
       <div class="dash-hdr">
@@ -1745,6 +1783,12 @@ tr:hover td{background:var(--surface2);}
       </div>
 
       <div id="it-content" style="display:none;">
+        <div id="it-tabbar" style="display:flex;gap:4px;margin:0 0 16px;border-bottom:1px solid var(--border);overflow-x:auto;">
+          <button id="it-tabbtn-total" onclick="itSetTab('total')" style="background:none;border:none;border-bottom:2px solid transparent;padding:9px 16px;font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;cursor:pointer;white-space:nowrap;"><i class="ti ti-chart-bar" style="margin-right:6px;"></i>Total Inventory</button>
+          <button id="it-tabbtn-store" onclick="itSetTab('store')" style="background:none;border:none;border-bottom:2px solid transparent;padding:9px 16px;font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;cursor:pointer;white-space:nowrap;"><i class="ti ti-building-store" style="margin-right:6px;"></i>Per Store</button>
+          <button id="it-tabbtn-segmen" onclick="itSetTab('segmen')" style="background:none;border:none;border-bottom:2px solid transparent;padding:9px 16px;font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;cursor:pointer;white-space:nowrap;"><i class="ti ti-category" style="margin-right:6px;"></i>Per Segmen</button>
+        </div>
+        <div id="it-tab-total">
         <div id="it-kpi-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:20px;overflow-x:auto;"></div>
 
         <!-- Tabel detail per Outlet / per Bulan -->
@@ -1768,10 +1812,22 @@ tr:hover td{background:var(--surface2);}
 
         <!-- ── Breakdown Ending Inventory per Komponen ── -->
         <div id="it-breakdown-wrap" style="margin-top:14px;"></div>
+        <div id="it-warna-total"></div>
         <canvas id="it-store-chart" style="display:none;width:0;height:0;"></canvas>
         <canvas id="it-trend-chart" style="display:none;width:0;height:0;"></canvas>
         <canvas id="it-cogs-inv-chart" style="display:none;width:0;height:0;"></canvas>
         <canvas id="it-dio-chart" style="display:none;width:0;height:0;"></canvas>
+        </div>
+        <div id="it-tab-store" style="display:none;">
+          <div id="it-store-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px;margin-bottom:6px;"></div>
+          <div id="it-store-wrap"></div>
+          <div id="it-warna-store"></div>
+        </div>
+        <div id="it-tab-segmen" style="display:none;">
+          <div id="it-seg-kpi" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:6px;"></div>
+          <div id="it-seg-wrap"></div>
+          <div id="it-warna-segmen"></div>
+        </div>
 
       </div>
     </div>
@@ -8503,24 +8559,93 @@ function itSortBulan(a, b) {
 }
 
 /* ── Load both CSVs ── */
+/* ════════════════════════════════════════════════
+   ITO FINAL — sumber data halaman Inventory Turnover
+   Menggantikan sumber lama (tab COGS + tab inventory format lebar). Dua tab di spreadsheet yang sama, dipublikasikan sebagai CSV:
+     DASH_STORE_KATEGORI : Bulan, Store, Kategori, Segmen, COGS, OH Value, OD Value, Inventory Akhir, Inventory Awal, OH Qty, OD Qty   (level STORE)
+     DASH_KATEGORI       : Bulan, Kategori, Segmen, COGS, OH DC, OH Store, OD Store, OD ke DC, WIP, Total Inventory, Inventory Awal, Qty ...  (level TOTAL)
+   Aturan level:
+     semua store dipilih -> TOTAL = DC + OH store + OD store + OD ke DC + WIP        (dari DASH_KATEGORI)
+     sebagian store      -> STORE = OH + OD store saja (tanpa DC, WIP, OD ke DC)     (dari DASH_STORE_KATEGORI)
+   Filter Segmen & Kategori berlaku di kedua level.
+   Basis turnover: 'akhir' (default, seperti sebelumnya: COGS ÷ inventory akhir bulan) atau 'rata' (COGS ÷ rata-rata awal & akhir, sama dengan Excel ITO_FINAL).
+════════════════════════════════════════════════ */
+const IT_PUB_BASE  = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRHvVkO6IPvH9-gReW5nNLEcY1eFWEustU25lOsVk0YEK12DUyzRkzMNuKjkByODAU1nkdRVqyLREwb/pub?gid=';
+const IT_STORE_GID = '970882124';    /* tab DASH_STORE_KATEGORI */
+const IT_KAT_GID   = '1244305849';   /* tab DASH_KATEGORI */
+const IT_WARNA_GID = '';             /* tab DASH_WARNA (opsional) — isi dengan gid tab bila sudah dipublikasikan; kosong = coba lewat nama tab (gviz) */
+const IT_GVIZ      = 'https://docs.google.com/spreadsheets/d/1yT78Hl1K6V1Y5ECA-v0w-SV77fc5qMES9YlozIHUPMg/gviz/tq?tqx=out:csv&sheet=';
+const IT_SEG_ORDER = ['TIGALAPAN','MAMU','DLL','REJECT','BELUM DIPETAKAN'];
+const IT_SEG_LABEL = {TIGALAPAN:'Tigalapan', MAMU:'Mamu', DLL:'DLL', REJECT:'Reject', 'BELUM DIPETAKAN':'Belum dipetakan'};
+const IT_KEYS      = ['bulan','outlet','seg','kat'];
+const IT_DFLT_LBL  = {bulan:'Semua Bulan', outlet:'Semua Store', seg:'Semua Segmen', kat:'Semua Kategori'};
+var it3 = { store:[], kat:[], warna:null, _wRows:null, katSeg:{}, all:{bulan:[],outlet:[],seg:[],kat:[]}, sel:{}, built:false };
+
 function itLoad() {
-  let cogsOk=false, invOk=false;
+  let a = null, b = null;
+  const us = (window.IT_TEST_URLS && window.IT_TEST_URLS.store) || (IT_PUB_BASE + IT_STORE_GID + '&single=true&output=csv');
+  const uk = (window.IT_TEST_URLS && window.IT_TEST_URLS.kat)   || (IT_PUB_BASE + IT_KAT_GID   + '&single=true&output=csv');
   const check = () => {
-    if (cogsOk && invOk) {
+    if (a && b) {
+      if (!it3Parse(a, b)) return;
+      it3WarnaTry();
       itReady = true;
       if (document.getElementById('page-invturn').classList.contains('active')) itInit();
     }
   };
-  window._csvNextLabel = 'Inventory Turnover COGS';
-  csvFetch(IT_COGS_URL, {download:true,header:true,skipEmptyLines:true,
-    complete(r){ itCogsData=r.data; cogsOk=true; check(); },
-    error(){ itShowState('❌ Gagal memuat data COGS.'); }
+  window._csvNextLabel = 'ITO Final — Store x Kategori';
+  csvFetch(us, {download:true, header:true, skipEmptyLines:true,
+    complete(r){ a = r.data; check(); },
+    error(){ itFail('Gagal memuat data ITO (DASH_STORE_KATEGORI).'); }
   });
-  window._csvNextLabel = 'Inventory Turnover Inv';
-  csvFetch(IT_INV_URL, {download:true,header:false,skipEmptyLines:false,
-    complete(r){ itInvData=r.data; invOk=true; check(); },
-    error(){ itShowState('❌ Gagal memuat data Inventory.'); }
+  const uw = (window.IT_TEST_URLS && window.IT_TEST_URLS.warna) || (IT_WARNA_GID ? IT_PUB_BASE + IT_WARNA_GID + '&single=true&output=csv' : IT_GVIZ + 'DASH_WARNA');
+  window._csvNextLabel = 'ITO Final — Warna';
+  csvFetch(uw, {download:true, header:true, skipEmptyLines:true,
+    complete(r){ it3._wRows = r.data; it3WarnaTry(); },
+    error(){ it3.warna = null; }
   });
+  window._csvNextLabel = 'ITO Final — Total per Kategori';
+  csvFetch(uk, {download:true, header:true, skipEmptyLines:true,
+    complete(r){ b = r.data; check(); },
+    error(){ itFail('Gagal memuat data ITO (DASH_KATEGORI).'); }
+  });
+}
+
+function it3Parse(sRows, kRows) {
+  const g = (r, k) => { for (const f in r) { if (f.trim().toLowerCase() === k.toLowerCase()) return r[f]; } return null; };
+  const has = (rows, k) => rows.length && g(rows[0], k) !== null;
+  if (!has(sRows, 'OH Value') || !has(sRows, 'OH Qty') || !has(kRows, 'Qty WIP')) {
+    itFail('Format tab ITO belum sesuai (kolom OH Value / OH Qty / Qty WIP tidak ada).<br><small>Impor ulang DASH_STORE_KATEGORI dan DASH_KATEGORI dari folder dashboard_upload (Replace current sheet).</small>');
+    return false;
+  }
+  let dropped = 0;
+  const S = [], K = [], ns = v => itNum(v);
+  sRows.forEach(r => {
+    const b = itNormBulan(g(r,'Bulan')); if (!b) { dropped++; return; }
+    S.push({ b, s:String(g(r,'Store')).trim().toUpperCase(), k:String(g(r,'Kategori')).trim().toUpperCase(), g:String(g(r,'Segmen')).trim().toUpperCase(),
+             cogs:ns(g(r,'COGS')), oh:ns(g(r,'OH Value')), od:ns(g(r,'OD Value')), awal:ns(g(r,'Inventory Awal')), ohq:ns(g(r,'OH Qty')), odq:ns(g(r,'OD Qty')) });
+  });
+  kRows.forEach(r => {
+    const b = itNormBulan(g(r,'Bulan')); if (!b) { dropped++; return; }
+    K.push({ b, k:String(g(r,'Kategori')).trim().toUpperCase(), g:String(g(r,'Segmen')).trim().toUpperCase(), cogs:ns(g(r,'COGS')),
+             ohdc:ns(g(r,'OH DC')), ohst:ns(g(r,'OH Store')), odst:ns(g(r,'OD Store')), oddc:ns(g(r,'OD ke DC')), wip:ns(g(r,'WIP')),
+             akhir:ns(g(r,'Total Inventory')), awal:ns(g(r,'Inventory Awal')),
+             q_ohdc:ns(g(r,'Qty OH DC')), q_ohst:ns(g(r,'Qty OH Store')), q_odst:ns(g(r,'Qty OD Store')), q_oddc:ns(g(r,'Qty OD ke DC')), q_wip:ns(g(r,'Qty WIP')) });
+  });
+  if (!S.length || !K.length) {
+    itFail('Data ITO kosong atau kolom Bulan tidak dikenali (' + dropped + ' baris dilewati).<br><small>Saat impor ke Google Sheet, jangan centang "Convert text to numbers, dates and formulas" — kolom Bulan harus teks seperti Sep-2026.</small>');
+    return false;
+  }
+  it3.store = S; it3.kat = K;
+  const cg = {}; K.forEach(x => { cg[x.k] = (cg[x.k] || 0) + x.cogs; it3.katSeg[x.k] = x.g; });
+  S.forEach(x => { if (!(x.k in it3.katSeg)) it3.katSeg[x.k] = x.g; });
+  const months = [...new Set([...S.map(x => x.b), ...K.map(x => x.b)])].sort(itSortBulan);
+  const kats = Object.keys(it3.katSeg).sort((a, b) => (cg[b] || 0) - (cg[a] || 0) || a.localeCompare(b));
+  it3.all = { bulan: months, outlet: [...new Set(S.map(x => x.s))].sort(),
+              seg: IT_SEG_ORDER.filter(sg => kats.some(k => it3.katSeg[k] === sg)), kat: kats };
+  it3.built = false;
+  it3.err = null;
+  return true;
 }
 
 function itShowState(msg) {
@@ -8732,193 +8857,145 @@ function itParseCogs(rows) {
 
 /* ── Init ── */
 function itInit() {
-  if (!itCogsData || !itInvData) {
-    itShowState('❌ Data belum tersedia.');
+  if (!itReady || !it3.all.bulan.length) {
+    if (it3.err) { itShowState(it3.err); }
+    else {
+      const st = document.getElementById('it-state');
+      st.innerHTML = '<div style="font-size:28px;margin-bottom:8px;">⏳</div>Memuat data...';
+      st.style.display = 'block';
+      document.getElementById('it-content').style.display = 'none';
+    }
     return;
   }
-
-  const { months, totalMap, onHandMap, ohStoreMap, ohStoreQtyMap, dcMap, dcQtyMap,
-    odStoreMap, odStoreQtyMap, odDcMap, odDcQtyMap, wipMap, storeMap, storeQtyMap,
-    storeODMap, storeODQtyMap } = itParseInventory(itInvData);
-  const cogsMap = itParseCogs(itCogsData);
-
-  /* allBulan = UNION bulan dari inventory + COGS (agar semua bulan tampil) */
-  const cogsBulanSet = new Set();
-  Object.values(cogsMap).forEach(bm => Object.keys(bm).forEach(b => cogsBulanSet.add(b)));
-  const invBulanSet  = new Set(months);
-  /* Union: semua bulan dari kedua sumber */
-  const allBulanSet  = new Set([...invBulanSet, ...cogsBulanSet]);
-  const allBulan     = [...allBulanSet].sort(itSortBulan);
-
-  console.log('[IT] allBulan:', allBulan);
-  console.log('[IT] COGS bulan:', [...cogsBulanSet].sort(itSortBulan));
-  console.log('[IT] INV  bulan:', [...invBulanSet].sort(itSortBulan));
-
-  /* cogsStores = stores dari COGS data */
-  const cogsStores = Object.keys(cogsMap).sort();
-
-  /* invStores = store names dari inventory storeMap (untuk filter inventory side) */
-  /* Ambil dari bulan mana saja yang punya storeMap */
-  const invStoreSet = new Set();
-  Object.values(storeMap).forEach(bm => Object.keys(bm).forEach(s => invStoreSet.add(s)));
-  const invStores = [...invStoreSet].sort();
-
-  /* Build unified store list: gabungkan COGS stores + inv stores, normalize nama */
-  /* Map: cogsStoreName → invStoreName (untuk matching filter) */
-  /* Heuristik: jika COGS store name contains inv store name or vice versa → match */
-  const storeMatchMap = {}; /* cogsStore → invStore */
-  cogsStores.forEach(cs => {
-    const csN = cs.toUpperCase().replace(/\s+/g,' ').trim();
-    /* Exact match first */
-    if (invStoreSet.has(csN)) { storeMatchMap[cs] = csN; return; }
-    /* Partial: cogs store "TIGALAPANKAOS MAKASSAR" → inv "TIGALAPANKAOS MAKASSAR" */
-    const found = invStores.find(is => csN.includes(is) || is.includes(csN));
-    if (found) storeMatchMap[cs] = found;
-  });
-  console.log('[IT] storeMatchMap:', storeMatchMap, 'invStores:', invStores);
-
-  /* Store to global */
-  window._itCogsMap      = cogsMap;
-  window._itTotalMap     = totalMap;
-  window._itOnHandMap    = onHandMap;
-  window._itOhStoreMap   = ohStoreMap;
-  window._itOhStoreQtyMap= ohStoreQtyMap;
-  window._itDcMap        = dcMap;
-  window._itDcQtyMap     = dcQtyMap;
-  window._itOdStoreMap   = odStoreMap;
-  window._itOdStoreQtyMap= odStoreQtyMap;
-  window._itOdDcMap      = odDcMap;
-  window._itOdDcQtyMap   = odDcQtyMap;
-  window._itWipMap       = wipMap;
-  window._itStoreMap     = storeMap;
-  window._itStoreQtyMap  = storeQtyMap;
-  window._itStoreODMap   = storeODMap;
-  window._itStoreODQtyMap= storeODQtyMap;
-  window._itCogsStores   = cogsStores;
-  window._itInvStores    = invStores;
-  window._itStoreMatchMap= storeMatchMap;
-  window._itAllBulan     = allBulan;
-  window._itAllOutlet    = cogsStores;
-  window._itSelBulan     = new Set(allBulan);
-  window._itSelOutlet    = new Set(cogsStores);
-
-  if (allBulan.length === 0) {
-    itShowState('⚠️ Tidak ada data bulan yang cocok antara COGS dan Inventory.<br><small>Cek format tanggal di kedua sheet.</small>');
-    return;
+  if (!it3.built) {
+    IT_KEYS.forEach(k => { it3.sel[k] = new Set(it3.all[k]); });
+    const mk = (id, key, items) => {
+      document.getElementById(id).innerHTML = items.map(o =>
+        `<label class="qf-item"><input type="checkbox" value="${itEsc(o.v)}" checked onchange="itDDChanged('${key}')"><span>${itEsc(o.l)}</span></label>`).join('');
+    };
+    mk('it-list-bulan',  'bulan',  it3.all.bulan.map(v => ({v, l:v})));
+    mk('it-list-outlet', 'outlet', it3.all.outlet.map(v => ({v, l:v})));
+    mk('it-list-seg',    'seg',    it3.all.seg.map(v => ({v, l:IT_SEG_LABEL[v] || v})));
+    mk('it-list-kat',    'kat',    it3.all.kat.map(v => ({v, l:v})));
+    IT_KEYS.forEach(itUpdatePillLbl);
+    itUpdateReset();
+    it3.built = true;
   }
-
-  document.getElementById('it-state').style.display    = 'none';
-  document.getElementById('it-content').style.display  = 'block';
-
-  /* Populate filter dropdowns */
-  document.getElementById('it-list-bulan').innerHTML = allBulan.map(b =>
-    `<label class="qf-item"><input type="checkbox" value="${b}" checked onchange="itDDChanged('bulan')"><span>${b}</span></label>`
-  ).join('');
-  document.getElementById('it-list-outlet').innerHTML = cogsStores.map(s =>
-    `<label class="qf-item"><input type="checkbox" value="${s}" checked onchange="itDDChanged('outlet')"><span>${s}</span></label>`
-  ).join('');
-  itUpdatePillLbl('bulan');
-  itUpdatePillLbl('outlet');
-
+  document.getElementById('it-state').style.display   = 'none';
+  document.getElementById('it-content').style.display = 'block';
+  itSyncBasisUI();
+  itSyncTabUI();
   itRender();
 }
+function itFail(html) { it3.err = html; itShowState(html); }
+function itEsc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ── agregasi sesuai filter (level TOTAL vs STORE) ── */
+function it3Z() { return {cogs:0, akhir:0, awal:0, ohdc:0, ohst:0, odst:0, oddc:0, wip:0, q_ohdc:0, q_ohst:0, q_odst:0, q_oddc:0, q_wip:0}; }
+function it3Calc() {
+  const sel = it3.sel;
+  const stores = it3.all.outlet.filter(s => sel.outlet.has(s));
+  const total = stores.length > 0 && stores.length === it3.all.outlet.length;
+  const bl = it3.all.bulan.filter(b => sel.bulan.has(b));
+  const act = k => sel.kat.has(k) && sel.seg.has(it3.katSeg[k]);
+  const mon = {}; bl.forEach(b => { mon[b] = it3Z(); });
+  if (total) {
+    it3.kat.forEach(x => {
+      const z = mon[x.b]; if (!z || !act(x.k)) return;
+      z.cogs += x.cogs; z.akhir += x.akhir; z.awal += x.awal; z.ohdc += x.ohdc; z.ohst += x.ohst; z.odst += x.odst; z.oddc += x.oddc; z.wip += x.wip;
+      z.q_ohdc += x.q_ohdc; z.q_ohst += x.q_ohst; z.q_odst += x.q_odst; z.q_oddc += x.q_oddc; z.q_wip += x.q_wip;
+    });
+  } else {
+    it3.store.forEach(x => {
+      const z = mon[x.b]; if (!z || !sel.outlet.has(x.s) || !act(x.k)) return;
+      z.cogs += x.cogs; z.akhir += x.oh + x.od; z.awal += x.awal; z.ohst += x.oh; z.odst += x.od; z.q_ohst += x.ohq; z.q_odst += x.odq;
+    });
+  }
+  const last = bl[bl.length - 1], dist = {};
+  if (last) {
+    it3.store.forEach(x => {
+      if (x.b !== last || !sel.outlet.has(x.s) || !act(x.k)) return;
+      const d = dist[x.s] = dist[x.s] || {oh:0, od:0, ohq:0, odq:0};
+      d.oh += x.oh; d.od += x.od; d.ohq += x.ohq; d.odq += x.odq;
+    });
+  }
+  return { total, bl, mon, first:bl[0], last, stores, dist };
+}
+
+function itSyncBasisUI() {
+  const b = window._it3Basis || 'akhir';
+  const on  = 'background:var(--accent);color:#0d0d0f;font-weight:700;';
+  const off = 'background:transparent;color:var(--muted);font-weight:400;';
+  const a = document.getElementById('it-basis-akhir'), r = document.getElementById('it-basis-rata');
+  if (a) a.style.cssText += (b === 'akhir' ? on : off);
+  if (r) r.style.cssText += (b === 'rata' ? on : off);
+}
+function itSetBasis(b) { window._it3Basis = b; itSyncBasisUI(); itRender(); }
 
 /* ── Main Render ── */
 function itRender() {
-  const cogsMap    = window._itCogsMap    || {};
-  const totalMap   = window._itTotalMap   || {};
-  const onHandMap  = window._itOnHandMap  || {};
-  const ohStoreMap = window._itOhStoreMap || {};
-  const ohStoreQtyMap = window._itOhStoreQtyMap || {};
-  const dcMap      = window._itDcMap      || {};
-  const dcQtyMap    = window._itDcQtyMap   || {};
-  const odStoreMap = window._itOdStoreMap || {};
-  const odStoreQtyMap = window._itOdStoreQtyMap || {};
-  const odDcMap    = window._itOdDcMap    || {};
-  const odDcQtyMap  = window._itOdDcQtyMap || {};
-  const wipMap     = window._itWipMap     || {};
-  const storeMap     = window._itStoreMap     || {};
-  const storeQtyMap  = window._itStoreQtyMap  || {};
-  const storeODMap   = window._itStoreODMap   || {};
-  const storeODQtyMap= window._itStoreODQtyMap|| {};
-  const allBulan     = window._itAllBulan     || [];
-  const cogsStores   = window._itCogsStores   || [];
-  const storeMatchMap= window._itStoreMatchMap|| {};
-  if (!allBulan.length) return;
-
-  const selBulan    = window._itSelBulan  || new Set(allBulan);
-  const selOutlet   = window._itSelOutlet || new Set(cogsStores);
-  const bulansFinal = allBulan.filter(b => selBulan.has(b));
-  const stores      = cogsStores.filter(s => selOutlet.has(s));
-  const nBulan      = bulansFinal.length;
-  if (!nBulan) {
-    /* Semua Bulan di-uncheck (Hapus Semua) → tampilkan kosong, bukan data lama */
+  if (!itReady || !it3.built) return;
+  const R = it3Calc(), bl = R.bl, nBulan = bl.length;
+  const basis = window._it3Basis || 'akhir';
+  const badge = document.getElementById('it-mode');
+  if (badge) {
+    badge.style.display = 'inline-block';
+    const lvlTot = R.total && window._itTab !== 'store';
+    badge.style.color = lvlTot ? 'var(--accent)' : 'var(--accent3)';
+    badge.style.borderColor = lvlTot ? 'rgba(232,255,71,.4)' : 'rgba(71,200,255,.4)';
+    badge.textContent = lvlTot ? 'Level TOTAL · incl. DC, WIP, OD ke DC' : 'Level STORE · OH + OD store saja';
+  }
+  const empty = !nBulan || !bl.some(b => R.mon[b].cogs || R.mon[b].akhir);
+  if (empty) {
+    const msg = !nBulan ? 'Tidak ada data — pilih minimal 1 Bulan di filter.' : 'Tidak ada data untuk kombinasi filter ini.';
     document.getElementById('it-kpi-grid').innerHTML =
-      `<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;">Tidak ada data — pilih minimal 1 Bulan di filter.</div>`;
+      `<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;">${msg}</div>`;
+    document.getElementById('it-tbl-head').innerHTML = '';
     document.getElementById('it-tbl-body').innerHTML =
-      `<tr><td colspan="20" style="padding:20px;text-align:center;color:var(--muted);">Tidak ada data — pilih minimal 1 Bulan di filter.</td></tr>`;
+      `<tr><td colspan="20" style="padding:20px;text-align:center;color:var(--muted);">${msg}</td></tr>`;
+    document.getElementById('it-breakdown-wrap').innerHTML = '';
+    ['it-store-kpi', 'it-store-wrap', 'it-seg-kpi', 'it-seg-wrap', 'it-warna-total', 'it-warna-store', 'it-warna-segmen'].forEach(i => { const e = document.getElementById(i); if (e) e.innerHTML = ''; });
     return;
   }
-
-  /* ── Inventory filtering by store ──
-     Jika semua store dipilih → pakai totalMap (aggregate resmi dari sheet)
-     Jika store subset → hitung dari storeMap untuk store-store yang di-match,
-     sisanya dihitung secara proporsional berdasarkan % store dari total OH */
-  const allStoresSelected = stores.length === cogsStores.length;
-
-  function getInvForBulan(b) {
-    if (allStoresSelected) return totalMap[b] || 0;
-    const bStoreMap    = storeMap[b]   || {};
-    const ohStoreTot   = ohStoreMap[b] || 0;
-    const dcVal        = dcMap[b]      || 0;
-    let selectedOH = 0;
-    stores.forEach(cs => {
-      const invSt = storeMatchMap[cs];
-      if (invSt && bStoreMap[invSt] != null) selectedOH += bStoreMap[invSt];
-    });
-    const prop   = ohStoreTot > 0 ? selectedOH / ohStoreTot : 0;
-    const adjDC  = dcVal               * prop;
-    const adjODS = (odStoreMap[b] || 0)* prop;
-    const adjODDC= (odDcMap[b]   || 0) * prop;
-    const adjWip = (wipMap[b]    || 0) * prop;
-    return selectedOH + adjDC + adjODS + adjODDC + adjWip;
+  const Z = b => R.mon[b];
+  const avgM = b => { const z = Z(b); return z.awal > 0 ? (z.awal + z.akhir) / 2 : z.akhir; };
+  const firstB = R.first, lastB = R.last;
+  const grandCogs = bl.reduce((s, b) => s + Z(b).cogs, 0);
+  const endingInv = Z(lastB).akhir;
+  let beginningInv, avgInventory;
+  if (basis === 'rata') {
+    const z0 = Z(firstB);
+    beginningInv = z0.awal > 0 ? z0.awal : z0.akhir;
+    avgInventory = bl.reduce((s, b) => s + avgM(b), 0) / nBulan;
+  } else {
+    beginningInv = Z(firstB).akhir;
+    avgInventory = (beginningInv + endingInv) / 2;
   }
 
-  /* ── Beginning & Ending Inventory (store-filtered) ── */
-  const firstB        = bulansFinal[0];
-  const lastB         = bulansFinal[bulansFinal.length-1];
-  const beginningInv  = getInvForBulan(firstB);
-  const endingInv     = getInvForBulan(lastB);
-  const avgInventory  = (beginningInv + endingInv) / 2;
-
-  /* Grand COGS (filtered stores & months) */
-  const grandCogs = stores.reduce((sum,s) =>
-    sum + bulansFinal.reduce((s2,b) => s2+(cogsMap[s]?.[b]||0), 0), 0);
-
-  /* Turnover & DIO */
   const turnover  = avgInventory > 0 ? grandCogs / avgInventory : null;
-  const dio       = (turnover && turnover > 0) ? Math.round((30*nBulan)/turnover*10)/10 : null;
-  const turnColor = turnover==null?'var(--muted)':turnover>=4?'#4ade80':turnover>=2?'#facc15':'#f87171';
+  const dio       = (turnover && turnover > 0) ? Math.round((30 * nBulan) / turnover * 10) / 10 : null;
+  const turnColor = turnover == null ? 'var(--muted)' : turnover >= 4 ? '#4ade80' : turnover >= 2 ? '#facc15' : '#f87171';
+  const proj12    = (turnover != null && nBulan > 0) ? (turnover / nBulan) * 12 : null;
+  const projColor = proj12 == null ? 'var(--muted)' : proj12 >= 4 ? '#4ade80' : proj12 >= 2 ? '#facc15' : '#f87171';
+  const nSt = R.stores.length;
+  const fSeg = it3.sel.seg.size !== it3.all.seg.length, fKat = it3.sel.kat.size !== it3.all.kat.length;
+  const fTxt = (fSeg || fKat) ? ' · ' + [fSeg ? 'segmen' : '', fKat ? 'kategori' : ''].filter(Boolean).join(' + ') + ' terfilter' : '';
+  const avgLbl = basis === 'rata' ? 'Rata-rata Inventory (rata-rata bulanan)' : 'Rata-rata Inventory (Awal+Akhir)/2';
 
-  /* Proyeksi 12 bulan */
-  const proj12    = (turnover!=null && nBulan>0) ? (turnover/nBulan)*12 : null;
-  const projColor = proj12==null?'var(--muted)':proj12>=4?'#4ade80':proj12>=2?'#facc15':'#f87171';
-
-  /* ── KPI Cards ── */
   document.getElementById('it-kpi-grid').innerHTML = `
     <div class="ns-mc" style="--ns-ac:var(--accent3)">
       <div class="lbl">Total COGS</div>
       <div class="val" style="font-size:clamp(12px,1.5vw,16px);">${fmtRpFull(grandCogs)}</div>
-      <div class="sub">${stores.length} outlet · ${nBulan} bulan</div>
+      <div class="sub">${nSt} outlet · ${nBulan} bulan${fTxt}</div>
     </div>
     <div class="ns-mc" style="--ns-ac:var(--accent4)">
-      <div class="lbl">Rata-rata Inventory (Awal+Akhir)/2</div>
+      <div class="lbl">${avgLbl}</div>
       <div class="val" style="font-size:clamp(12px,1.5vw,16px);">${fmtRpFull(avgInventory)}</div>
       <div class="sub" style="font-size:9px;">${fmtRp(beginningInv)} <span style="color:var(--muted)">→</span> ${fmtRp(endingInv)}</div>
     </div>
     <div class="ns-mc" style="--ns-ac:${turnColor}">
       <div class="lbl">Inventory Turnover</div>
-      <div class="val" style="font-size:22px;font-weight:700;color:${turnColor};">${turnover!=null?turnover.toFixed(3)+'×':'—'}</div>
+      <div class="val" style="font-size:22px;font-weight:700;color:${turnColor};">${turnover != null ? turnover.toFixed(3) + '×' : '—'}</div>
       <div class="sub">COGS ÷ Avg Inventory · ${nBulan} bulan</div>
     </div>
     <div class="ns-mc" style="--ns-ac:${projColor};border:1px solid ${projColor}33;">
@@ -8926,12 +9003,12 @@ function itRender() {
         <i class="ti ti-calendar-stats" style="font-size:11px;color:${projColor};"></i>
         Proyeksi Turnover (12 Bulan)
       </div>
-      <div class="val" style="font-size:22px;font-weight:700;color:${projColor};">${proj12!=null?proj12.toFixed(3)+'×':'—'}</div>
-      <div class="sub" style="font-size:9px;">(${turnover!=null?turnover.toFixed(3):'—'}× ÷ ${nBulan} bln) × 12</div>
+      <div class="val" style="font-size:22px;font-weight:700;color:${projColor};">${proj12 != null ? proj12.toFixed(3) + '×' : '—'}</div>
+      <div class="sub" style="font-size:9px;">(${turnover != null ? turnover.toFixed(3) : '—'}× ÷ ${nBulan} bln) × 12</div>
     </div>
     <div class="ns-mc" style="--ns-ac:var(--accent2)">
       <div class="lbl">DIO (Days Inventory Outstanding)</div>
-      <div class="val" style="font-size:22px;font-weight:700;">${dio!=null?dio+' hari':'—'}</div>
+      <div class="val" style="font-size:22px;font-weight:700;">${dio != null ? dio + ' hari' : '—'}</div>
       <div class="sub">(30×${nBulan} bln) ÷ Turnover</div>
     </div>
     <div class="ns-mc" style="--ns-ac:#4ade80">
@@ -8945,149 +9022,82 @@ function itRender() {
       <div class="sub">${lastB}</div>
     </div>`;
 
-  itRenderTable(cogsMap, totalMap, storeMap, onHandMap, ohStoreMap, dcMap, odStoreMap, odDcMap, wipMap, stores, cogsStores, storeMatchMap, bulansFinal, avgInventory, nBulan, grandCogs, turnover, dio);
-  itRenderBreakdown(bulansFinal, totalMap, onHandMap, ohStoreMap, dcMap, odStoreMap, odDcMap, wipMap, storeMap,
-    allStoresSelected, stores, storeMatchMap,
-    { ohStoreQtyMap, dcQtyMap, odStoreQtyMap, odDcQtyMap, storeQtyMap, storeODMap, storeODQtyMap });
+  itRenderTable(R, basis, avgM, avgInventory, grandCogs, turnover, dio);
+  itRenderBreakdown(R);
+  itRenderStoreTab(R);
+  itRenderSegTab(R);
+  itRenderWarna(R);
 }
 
-function itRenderTable(cogsMap, totalMap, storeMap, onHandMap, ohStoreMap, dcMap, odStoreMap, odDcMap, wipMap, stores, allCogsStores, storeMatchMap, bulansFinal, avgInventory, nBulan, grandCogs, grandTurnover, grandDIO) {
+function itRenderTable(R, basis, avgM, avgInventory, grandCogs, grandTurnover, grandDIO) {
   const thS = 'position:sticky;top:0;background:var(--surface);padding:8px 10px;text-align:left;color:var(--muted);border-bottom:1px solid var(--border);font-weight:400;font-size:10px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;';
-  const thR = thS+'text-align:right;';
+  const thR = thS + 'text-align:right;';
   const tdB = 'padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text);font-size:11px;';
-  const tdR = tdB+'text-align:right;font-family:var(--font-mono);';
-
-  const allStoresSelected = stores.length === allCogsStores.length;
-
-  function getInvForBulanTbl(b) {
-    if (allStoresSelected) return totalMap[b] || 0;
-    const bStoreMap   = storeMap[b] || {};
-    const ohStoreTot  = ohStoreMap[b] || 0;
-    const dcVal       = dcMap[b]      || 0;
-    const allInvStoreSum = Object.values(bStoreMap).reduce((s,v)=>s+v,0);
-    let selectedOH = 0;
-    stores.forEach(cs => {
-      const invSt = storeMatchMap[cs];
-      if (invSt && bStoreMap[invSt] != null) selectedOH += bStoreMap[invSt];
-    });
-    const prop = ohStoreTot > 0 ? selectedOH / ohStoreTot : 0;
-    return selectedOH + (dcVal + (odStoreMap[b]||0) + (odDcMap[b]||0) + (wipMap[b]||0)) * prop;
-  }
+  const tdR = tdB + 'text-align:right;font-family:var(--font-mono);';
+  const rata = basis === 'rata';
 
   function turnBadge(t) {
-    if (t==null) return '<span style="color:var(--muted)">—</span>';
-    const clr = t>=4?'#4ade80':t>=2?'#facc15':'#f87171';
-    const bg  = t>=4?'rgba(74,222,128,.15)':t>=2?'rgba(234,179,8,.15)':'rgba(248,113,113,.15)';
+    if (t == null) return '<span style="color:var(--muted)">—</span>';
+    const clr = t >= 4 ? '#4ade80' : t >= 2 ? '#facc15' : '#f87171';
+    const bg  = t >= 4 ? 'rgba(74,222,128,.15)' : t >= 2 ? 'rgba(234,179,8,.15)' : 'rgba(248,113,113,.15)';
     return `<span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${clr};background:${bg};padding:2px 8px;border-radius:6px;">${t.toFixed(3)}×</span>`;
   }
 
-  /* Per Bulan view */
   document.getElementById('it-tbl-head').innerHTML = `<tr>
     <th style="${thS}">Bulan</th>
     <th style="${thR}">Total COGS</th>
     <th style="${thR}">Total Inventory (Snapshot)</th>
+    ${rata ? `<th style="${thR}">Rata-rata Inventory</th>` : ''}
     <th style="${thR}">Turnover (Bulan Ini)</th>
     <th style="${thR}">DIO (Hari)</th>
   </tr>`;
 
-  const rows = bulansFinal.map(b => {
-    const cogs = stores.reduce((sum,s)=>sum+(cogsMap[s]?.[b]||0), 0);
-    const inv  = getInvForBulanTbl(b);
-    const turn = inv>0 && cogs>0 ? cogs/inv : null;
-    const dio  = (turn&&turn>0) ? Math.round(30/turn*10)/10 : null;
+  const rows = R.bl.map(b => {
+    const z = R.mon[b], cogs = z.cogs, inv = z.akhir;
+    const den = rata ? avgM(b) : inv;
+    const turn = den > 0 && cogs > 0 ? cogs / den : null;
+    const dio  = (turn && turn > 0) ? Math.round(30 / turn * 10) / 10 : null;
     return `<tr>
       <td style="${tdB};font-weight:600;">${b}</td>
-      <td style="${tdR}">${cogs>0 ? fmtRpFull(cogs) : '<span style="color:var(--muted);font-size:10px;">Tidak ada data COGS</span>'}</td>
+      <td style="${tdR}">${cogs > 0 ? fmtRpFull(cogs) : '<span style="color:var(--muted);font-size:10px;">Tidak ada data COGS</span>'}</td>
       <td style="${tdR}">${fmtRpFull(inv)}</td>
-      <td style="${tdR}">${cogs>0 ? turnBadge(turn) : '<span style="color:var(--muted);font-size:10px;">—</span>'}</td>
-      <td style="${tdR}">${(cogs>0&&dio!=null)?dio+' hari':'—'}</td>
+      ${rata ? `<td style="${tdR}">${fmtRpFull(avgM(b))}</td>` : ''}
+      <td style="${tdR}">${cogs > 0 ? turnBadge(turn) : '<span style="color:var(--muted);font-size:10px;">—</span>'}</td>
+      <td style="${tdR}">${(cogs > 0 && dio != null) ? dio + ' hari' : '—'}</td>
     </tr>`;
   });
-  /* Grand total row */
   rows.push(`<tr style="background:rgba(255,255,255,.04);font-weight:700;">
     <td style="${tdB}font-weight:700;color:var(--accent)">GRAND TOTAL</td>
     <td style="${tdR}font-weight:700;">${fmtRpFull(grandCogs)}</td>
     <td style="${tdR}font-weight:700;">${fmtRpFull(avgInventory)}</td>
+    ${rata ? `<td style="${tdR}font-weight:700;">${fmtRpFull(avgInventory)}</td>` : ''}
     <td style="${tdR}">${turnBadge(grandTurnover)}</td>
-    <td style="${tdR}font-weight:700;">${grandDIO!=null?grandDIO+' hari':'—'}</td>
+    <td style="${tdR}font-weight:700;">${grandDIO != null ? grandDIO + ' hari' : '—'}</td>
   </tr>`);
   document.getElementById('it-tbl-body').innerHTML = rows.join('');
 }
 
 /* ── Breakdown Inventory per Komponen per Bulan ── */
-function itRenderBreakdown(bulansFinal, totalMap, onHandMap, ohStoreMap, dcMap, odStoreMap, odDcMap, wipMap, storeMap, allStoresSelected, selStores, storeMatchMap, qtyMaps) {
+function itRenderBreakdown(R) {
   const el = document.getElementById('it-breakdown-wrap');
-  if (!el || !bulansFinal.length) return;
-
-  qtyMaps = qtyMaps || {};
-  const ohStoreQtyMap = qtyMaps.ohStoreQtyMap || {};
-  const dcQtyMap       = qtyMaps.dcQtyMap       || {};
-  const odStoreQtyMap = qtyMaps.odStoreQtyMap || {};
-  const odDcQtyMap     = qtyMaps.odDcQtyMap     || {};
-  const storeQtyMap    = qtyMaps.storeQtyMap    || {};
-  const storeODMap     = qtyMaps.storeODMap     || {};
-  const storeODQtyMap  = qtyMaps.storeODQtyMap  || {};
-
-  /* ── Mode tampilan: 'value' (Rp) atau 'qty' (satuan/stok) ── */
+  if (!el || !R.bl.length) return;
   window._itBdMode = window._itBdMode || 'value';
-  const mode  = window._itBdMode;
-  const isQty = mode === 'qty';
-  const fmt   = isQty ? itFmtQty : fmtRpFull;
+  const isQty = window._itBdMode === 'qty';
+  const fmt = isQty ? itFmtQty : fmtRpFull;
   const unitLbl = isQty ? 'Qty' : 'Value';
-
-  const lastB = bulansFinal[bulansFinal.length-1];
-
-  /* Helper: get proportion of selected stores vs all stores for a bulan (berbasis value, tetap sama utk qty) */
-  function getStoreProportion(b) {
-    if (allStoresSelected) return 1;
-    const bStoreMap    = storeMap[b] || {};
-    const ohStoreTotal = ohStoreMap[b] || 0;
-    if (ohStoreTotal <= 0) return 0;
-    let selectedOH = 0;
-    selStores.forEach(cs => {
-      const invSt = storeMatchMap[cs];
-      if (invSt && bStoreMap[invSt] != null) selectedOH += bStoreMap[invSt];
-    });
-    return selectedOH / ohStoreTotal;
-  }
-
-  const prop = getStoreProportion(lastB);
-
-  /* Pilih sumber map sesuai mode (value / qty) */
-  const OHStoreSrc = isQty ? ohStoreQtyMap : ohStoreMap;
-  const DCSrc       = isQty ? dcQtyMap       : dcMap;
-  const ODSSrc      = isQty ? odStoreQtyMap : odStoreMap;
-  const ODDCSrc      = isQty ? odDcQtyMap     : odDcMap;
-  const WipSrc      = isQty ? {} : wipMap; /* WIP tidak punya data qty di sheet */
-  const StoreSrc    = isQty ? storeQtyMap    : storeMap;
-
-  /* Scale all components by store proportion */
-  const rawOHStore= OHStoreSrc[lastB] || 0;
-  const rawDC   = DCSrc[lastB]      || 0;
-  const rawODS  = ODSSrc[lastB] || 0;
-  const rawODDC = ODDCSrc[lastB]    || 0;
-  const rawWip  = WipSrc[lastB]     || 0;
-
-  const endOHStore = allStoresSelected ? rawOHStore : (() => {
-    const bStoreMap = StoreSrc[lastB] || {};
-    let sel = 0;
-    selStores.forEach(cs => { const is = storeMatchMap[cs]; if(is && bStoreMap[is]) sel += bStoreMap[is]; });
-    return sel;
-  })();
-  const endDC   = rawDC   * prop;
-  const endODS  = rawODS  * prop;
-  const endODDC = rawODDC * prop;
-  const endWip  = rawWip  * prop;
-  const endTot  = endOHStore + endDC + endODS + endODDC + endWip;
+  const lastB = R.last;
+  const pick = (z, k) => isQty ? z['q_' + k] : z[k];
+  const zl = R.mon[lastB];
+  const endWip = pick(zl, 'wip'), endODS = pick(zl, 'odst'), endODDC = pick(zl, 'oddc'), endDC = pick(zl, 'ohdc'), endOHStore = pick(zl, 'ohst');
+  const endTot = endWip + endODS + endODDC + endDC + endOHStore;
 
   const COMP = [
-    { label:'WIP',              val: endWip,    color:'#f87171', icon:'⚙️' },
-    { label:'On Delivery Store',val: endODS,    color:'#facc15', icon:'🚚' },
-    { label:'On Delivery DC',   val: endODDC,   color:'#fb923c', icon:'📦' },
-    { label:'OH DC',            val: endDC,     color:'#47c8ff', icon:'🏭' },
-    { label:'OH Store',         val: endOHStore, color:'#4ade80', icon:'🏪' },
+    { label:'WIP',               val:endWip,     color:'#f87171', icon:'⚙️' },
+    { label:'On Delivery Store', val:endODS,     color:'#facc15', icon:'🚚' },
+    { label:'On Delivery DC',    val:endODDC,    color:'#fb923c', icon:'📦' },
+    { label:'OH DC',             val:endDC,      color:'#47c8ff', icon:'🏭' },
+    { label:'OH Store',          val:endOHStore, color:'#4ade80', icon:'🏪' },
   ];
-
   const cardHtml = COMP.map(c => {
     const pct = endTot > 0 ? (c.val / endTot * 100) : 0;
     return `
@@ -9099,13 +9109,12 @@ function itRenderBreakdown(bulansFinal, totalMap, onHandMap, ohStoreMap, dcMap, 
         color:${c.color};margin-bottom:4px;">${fmt(c.val)}</div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
         <div style="flex:1;height:4px;background:var(--surface2);border-radius:2px;margin-right:10px;overflow:hidden;">
-          <div style="height:100%;width:${Math.min(pct,100).toFixed(1)}%;background:${c.color};border-radius:2px;"></div>
+          <div style="height:100%;width:${Math.min(pct, 100).toFixed(1)}%;background:${c.color};border-radius:2px;"></div>
         </div>
         <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);flex-shrink:0;">${pct.toFixed(1)}%</span>
       </div>
     </div>`;
   }).join('');
-
   const totalCard = `
     <div style="background:var(--surface);border:1px solid var(--accent);border-radius:10px;
       padding:14px 16px;border-top:3px solid var(--accent);flex:1;min-width:150px;">
@@ -9114,131 +9123,68 @@ function itRenderBreakdown(bulansFinal, totalMap, onHandMap, ohStoreMap, dcMap, 
       <div style="font-family:var(--font-display);font-size:18px;font-weight:700;
         color:var(--accent);margin-bottom:4px;">${fmt(endTot)}</div>
       <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:8px;">
-        Total Inventory${allStoresSelected?'':' (filtered)'} · ${lastB}
+        Total Inventory${R.total ? '' : ' (filtered)'} · ${lastB}
       </div>
     </div>`;
-
-  /* Toggle Nilai Inventory / Quantity */
   const toggleHtml = `
     <div style="display:flex;gap:6px;align-items:center;">
       <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Tampilkan:</span>
       <div style="display:flex;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:2px;">
         <button onclick="itSetBdMode('value')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;
-          border:none;border-radius:6px;cursor:pointer;background:${!isQty?'var(--accent)':'transparent'};
-          color:${!isQty?'#0d0d0f':'var(--muted)'};font-weight:${!isQty?'700':'400'};">Nilai Inventory</button>
+          border:none;border-radius:6px;cursor:pointer;background:${!isQty ? 'var(--accent)' : 'transparent'};
+          color:${!isQty ? '#0d0d0f' : 'var(--muted)'};font-weight:${!isQty ? '700' : '400'};">Nilai Inventory</button>
         <button onclick="itSetBdMode('qty')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;
-          border:none;border-radius:6px;cursor:pointer;background:${isQty?'var(--accent)':'transparent'};
-          color:${isQty?'#0d0d0f':'var(--muted)'};font-weight:${isQty?'700':'400'};">Quantity</button>
+          border:none;border-radius:6px;cursor:pointer;background:${isQty ? 'var(--accent)' : 'transparent'};
+          color:${isQty ? '#0d0d0f' : 'var(--muted)'};font-weight:${isQty ? '700' : '400'};">Quantity</button>
       </div>
     </div>`;
 
-  /* Tabel detail per bulan */
   const th  = 'position:sticky;top:0;background:var(--surface);padding:8px 12px;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:400;border-bottom:1px solid var(--border);white-space:nowrap;text-align:right;';
   const thL = th + 'text-align:left;';
   const td  = 'padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;font-family:var(--font-mono);text-align:right;';
   const tdL = td + 'text-align:left;font-weight:600;';
   const tdM = td + 'color:var(--muted);font-size:10px;';
-
-  function pctFmt(v, tot) { return !tot ? '—' : (v/tot*100).toFixed(1)+'%'; }
+  const pctFmt = (v, tot) => !tot ? '—' : (v / tot * 100).toFixed(1) + '%';
 
   const headRow = `<tr>
     <th style="${thL}">Bulan</th>
-    <th style="${th};color:#f87171;">WIP</th>
-    <th style="${th}">%</th>
-    <th style="${th};color:#facc15;">OD Store</th>
-    <th style="${th}">%</th>
-    <th style="${th};color:#fb923c;">OD DC</th>
-    <th style="${th}">%</th>
-    <th style="${th};color:#47c8ff;">OH DC</th>
-    <th style="${th}">%</th>
-    <th style="${th};color:#4ade80;">OH Store</th>
-    <th style="${th}">%</th>
+    <th style="${th};color:#f87171;">WIP</th><th style="${th}">%</th>
+    <th style="${th};color:#facc15;">OD Store</th><th style="${th}">%</th>
+    <th style="${th};color:#fb923c;">OD DC</th><th style="${th}">%</th>
+    <th style="${th};color:#47c8ff;">OH DC</th><th style="${th}">%</th>
+    <th style="${th};color:#4ade80;">OH Store</th><th style="${th}">%</th>
     <th style="${th};color:var(--accent);">Total</th>
   </tr>`;
-
-  const bodyRows = bulansFinal.map((b, i) => {
-    const bProp = getStoreProportion(b);
-    const rawOHStoreb = OHStoreSrc[b] || 0;
-    const rawDCb = DCSrc[b]     || 0;
-    const ohStoreb = allStoresSelected ? rawOHStoreb : (() => {
-      const bm = StoreSrc[b] || {};
-      let sel = 0;
-      selStores.forEach(cs => { const is = storeMatchMap[cs]; if(is && bm[is]) sel += bm[is]; });
-      return sel;
-    })();
-    const dcb   = rawDCb   * bProp;
-    const odsb  = (ODSSrc[b] || 0) * bProp;
-    const oddcb = (ODDCSrc[b]    || 0) * bProp;
-    const wipb  = (WipSrc[b]     || 0) * bProp;
-    const totb  = ohStoreb + dcb + odsb + oddcb + wipb;
+  const bodyRows = R.bl.map((b, i) => {
+    const z = R.mon[b];
+    const wipb = pick(z, 'wip'), odsb = pick(z, 'odst'), oddcb = pick(z, 'oddc'), dcb = pick(z, 'ohdc'), ohb = pick(z, 'ohst');
+    const totb = wipb + odsb + oddcb + dcb + ohb;
     const isLast = b === lastB;
-    const bg = isLast ? 'background:rgba(232,255,71,.05);' : (i%2 ? 'background:rgba(255,255,255,.02);':'');
-    return `<tr style="${bg}${isLast?'font-weight:600;':''}">
-      <td style="${tdL}">${isLast?'★ ':''}${b}</td>
-      <td style="${td};color:#f87171;">${fmt(wipb)}</td>
-      <td style="${tdM}">${pctFmt(wipb,totb)}</td>
-      <td style="${td};color:#facc15;">${fmt(odsb)}</td>
-      <td style="${tdM}">${pctFmt(odsb,totb)}</td>
-      <td style="${td};color:#fb923c;">${fmt(oddcb)}</td>
-      <td style="${tdM}">${pctFmt(oddcb,totb)}</td>
-      <td style="${td};color:#47c8ff;">${fmt(dcb)}</td>
-      <td style="${tdM}">${pctFmt(dcb,totb)}</td>
-      <td style="${td};color:#4ade80;">${fmt(ohStoreb)}</td>
-      <td style="${tdM}">${pctFmt(ohStoreb,totb)}</td>
+    const bg = isLast ? 'background:rgba(232,255,71,.05);' : (i % 2 ? 'background:rgba(255,255,255,.02);' : '');
+    return `<tr style="${bg}${isLast ? 'font-weight:600;' : ''}">
+      <td style="${tdL}">${isLast ? '★ ' : ''}${b}</td>
+      <td style="${td};color:#f87171;">${fmt(wipb)}</td><td style="${tdM}">${pctFmt(wipb, totb)}</td>
+      <td style="${td};color:#facc15;">${fmt(odsb)}</td><td style="${tdM}">${pctFmt(odsb, totb)}</td>
+      <td style="${td};color:#fb923c;">${fmt(oddcb)}</td><td style="${tdM}">${pctFmt(oddcb, totb)}</td>
+      <td style="${td};color:#47c8ff;">${fmt(dcb)}</td><td style="${tdM}">${pctFmt(dcb, totb)}</td>
+      <td style="${td};color:#4ade80;">${fmt(ohb)}</td><td style="${tdM}">${pctFmt(ohb, totb)}</td>
       <td style="${td};font-weight:700;color:var(--accent);">${fmt(totb)}</td>
     </tr>`;
   });
 
-  /* Tabel per-store breakdown ON HAND untuk ending month — filtered */
-  const storeData  = StoreSrc[lastB] || {};
-  const matchedInvStores = allStoresSelected
-    ? Object.keys(storeData)
-    : selStores.map(cs => storeMatchMap[cs]).filter(Boolean);
-  const storeNames = [...new Set(matchedInvStores)].filter(s=>storeData[s]>0).sort((a,b)=>storeData[b]-storeData[a]);
-  const storeTotal = storeNames.reduce((s,k)=>s+storeData[k],0);
-  const storeRows  = storeNames.map((s,i) => {
-    const v   = storeData[s];
-    const pct = storeTotal>0?(v/storeTotal*100).toFixed(1):0;
-    const bg  = i%2?'background:rgba(255,255,255,.02);':'';
-    return `<tr style="${bg}">
-      <td style="${tdL};font-size:11px;">${s}</td>
-      <td style="${td}">${fmt(v)}</td>
-      <td style="${tdM}">${pct}%</td>
-    </tr>`;
-  });
-
-  /* Tabel per-store breakdown ON DELIVERY (OD Store) untuk ending month — filtered */
-  const ODSrc      = isQty ? storeODQtyMap : storeODMap;
-  const odStoreData = ODSrc[lastB] || {};
-  const matchedODStores = allStoresSelected
-    ? Object.keys(odStoreData)
-    : selStores.map(cs => storeMatchMap[cs]).filter(Boolean);
-  const odStoreNames = [...new Set(matchedODStores)].filter(s=>odStoreData[s]!=null).sort((a,b)=>(odStoreData[b]||0)-(odStoreData[a]||0));
-  const odStoreTotal = odStoreNames.reduce((s,k)=>s+odStoreData[k],0);
-  const odStoreRows  = odStoreNames.map((s,i) => {
-    const v   = odStoreData[s];
-    const pct = odStoreTotal>0?(v/odStoreTotal*100).toFixed(1):0;
-    const bg  = i%2?'background:rgba(255,255,255,.02);':'';
-    return `<tr style="${bg}">
-      <td style="${tdL};font-size:11px;">${s}</td>
-      <td style="${td}">${fmt(v)}</td>
-      <td style="${tdM}">${pct}%</td>
-    </tr>`;
-  });
 
   el.innerHTML = `
     <div style="margin-bottom:16px;">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
-        <div style="font-family:var(--font-mono);font-size:9px;color:var(--accent);
-          letter-spacing:.1em;text-transform:uppercase;">
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;">
           ◈ Komposisi Ending Inventory (${lastB}) — ${unitLbl}
         </div>
         ${toggleHtml}
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">${cardHtml}${totalCard}</div>
-      ${isQty ? `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:8px;">
-        ⓘ Mode Quantity: komponen WIP tidak memiliki data qty di sumber data, ditampilkan 0.
-      </div>` : ''}
+      ${R.total ? '' : `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:8px;">
+        ⓘ Level store: hanya OH Store dan OD Store. WIP, OD DC, dan OH DC tidak dibagi ke store (0).
+      </div>`}
     </div>
 
     <div class="cc">
@@ -9261,36 +9207,475 @@ function itRenderBreakdown(bulansFinal, totalMap, onHandMap, ohStoreMap, dcMap, 
       </div>
     </div>
 
-    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;">
-      ${storeNames.length > 0 ? `
-      <div class="cc" style="flex:1;min-width:280px;margin-top:0;">
-        <div class="ct">Distribusi OH Store — ${lastB} (${unitLbl})</div>
-        <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;max-height:320px;overflow-y:auto;">
-          <table style="width:100%;border-collapse:collapse;">
-            <thead><tr>
-              <th style="${thL}">Store</th>
-              <th style="${th}">OH ${unitLbl}</th>
-              <th style="${th}">%</th>
-            </tr></thead>
-            <tbody>${storeRows.join('')}</tbody>
-          </table>
-        </div>
-      </div>` : ''}
-      ${odStoreNames.length > 0 ? `
-      <div class="cc" style="flex:1;min-width:280px;margin-top:0;">
-        <div class="ct">Distribusi OD Store — ${lastB} (${unitLbl})</div>
-        <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;max-height:320px;overflow-y:auto;">
-          <table style="width:100%;border-collapse:collapse;">
-            <thead><tr>
-              <th style="${thL}">Store</th>
-              <th style="${th}">OD ${unitLbl}</th>
-              <th style="${th}">%</th>
-            </tr></thead>
-            <tbody>${odStoreRows.join('')}</tbody>
-          </table>
-        </div>
-      </div>` : ''}
+`;
+}
+
+/* ── Monitoring per segmen (Tigalapan / Mamu / DLL / Reject) ──
+   Level mengikuti filter Store: semua store = TOTAL (incl. DC, WIP, OD ke DC); sebagian store = STORE (OH + OD store saja).
+   Periode = bulan terpilih; basis ITO mengikuti tombol Basis. */
+const IT_SEG_COLOR = {TIGALAPAN:'#47c8ff', MAMU:'#e8ff47', DLL:'#ff6b35', REJECT:'#b47fff', 'BELUM DIPETAKAN':'#888888'};
+function it3SegMon(R) {
+  const sel = it3.sel, bl = new Set(R.bl);
+  const segF = window._itSegSeg || null, stF = window._itSegStore || null;
+  const act = k => sel.kat.has(k) && (segF ? it3.katSeg[k] === segF : sel.seg.has(it3.katSeg[k]));
+  const useTotal = R.total && !stF;
+  const per = {};
+  const put = (sg, b, cogs, akhir, awal) => {
+    const m = (per[sg] = per[sg] || {});
+    const z = (m[b] = m[b] || {cogs:0, akhir:0, awal:0});
+    z.cogs += cogs; z.akhir += akhir; z.awal += awal;
+  };
+  if (useTotal) {
+    it3.kat.forEach(x => { if (bl.has(x.b) && act(x.k)) put(x.g, x.b, x.cogs, x.akhir, x.awal); });
+  } else {
+    it3.store.forEach(x => { if (bl.has(x.b) && (stF ? x.s === stF : sel.outlet.has(x.s)) && act(x.k)) put(x.g, x.b, x.cogs, x.oh + x.od, x.awal); });
+  }
+  const basis = window._it3Basis || 'akhir', n = R.bl.length, rows = [];
+  IT_SEG_ORDER.forEach(sg => {
+    const m = per[sg]; if (!m) return;
+    let cogs = 0, avg = 0;
+    R.bl.forEach(b => { if (m[b]) cogs += m[b].cogs; });
+    const inv = m[R.last] ? m[R.last].akhir : 0;
+    if (basis === 'rata') {
+      let sum = 0;
+      R.bl.forEach(b => { const z = m[b]; if (z) sum += (z.awal > 0 ? (z.awal + z.akhir) / 2 : z.akhir); });
+      avg = sum / n;
+    } else {
+      avg = ((m[R.first] ? m[R.first].akhir : 0) + inv) / 2;
+    }
+    if (!cogs && !inv && !avg) return;
+    const ito = avg > 0 ? cogs / avg : null;
+    rows.push({ sg, cogs, inv, avg, ito, dio: (ito && ito > 0) ? Math.round(30 * n / ito * 10) / 10 : null });
+  });
+  const metric = window._itSegMetric || 'nominal';
+  rows.sort((a, b) => metric === 'ito' ? ((b.ito == null ? -1 : b.ito) - (a.ito == null ? -1 : a.ito)) : metric === 'cogs' ? (b.cogs - a.cogs) : (b.inv - a.inv));
+  return rows;
+}
+function itSetSegMetric(m) { window._itSegMetric = m; itRender(); }
+function itSetSegSeg(sg) { window._itSegSeg = sg || null; itRender(); }
+function itSetSegStore(s) { window._itSegStore = s || null; itRender(); }
+
+function itSegMonitorHtml(R, rows) {
+  const n = R.bl.length;
+  const metric = window._itSegMetric || 'nominal', segF = window._itSegSeg || null, stF = window._itSegStore || null;
+  const useTotal = R.total && !stF;
+  const totCogs = rows.reduce((s, r) => s + r.cogs, 0), totInv = rows.reduce((s, r) => s + r.inv, 0), totAvg = rows.reduce((s, r) => s + r.avg, 0);
+  const totIto = totAvg > 0 ? totCogs / totAvg : null;
+  const totDio = (totIto && totIto > 0) ? Math.round(30 * n / totIto * 10) / 10 : null;
+  const maxIto = Math.max(0.0001, ...rows.map(r => r.ito || 0)), maxInv = Math.max(1, ...rows.map(r => r.inv)), maxCogs = Math.max(1, ...rows.map(r => r.cogs));
+  const th  = 'position:sticky;top:0;background:var(--surface);padding:8px 12px;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:400;border-bottom:1px solid var(--border);white-space:nowrap;text-align:right;';
+  const thL = th + 'text-align:left;';
+  const td  = 'padding:9px 12px;border-bottom:1px solid var(--border);font-size:11px;font-family:var(--font-mono);text-align:right;position:relative;';
+  const tdL = td + 'text-align:left;font-weight:600;';
+  const hl  = 'color:var(--accent);';
+  const badge = t => {
+    if (t == null) return '<span style="color:var(--muted)">—</span>';
+    const clr = t >= 4 ? '#4ade80' : t >= 2 ? '#facc15' : '#f87171';
+    const bg  = t >= 4 ? 'rgba(74,222,128,.15)' : t >= 2 ? 'rgba(234,179,8,.15)' : 'rgba(248,113,113,.15)';
+    return `<span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${clr};background:${bg};padding:2px 8px;border-radius:6px;">${t.toFixed(3)}×</span>`;
+  };
+  const pct = (v, t) => t > 0 ? (v / t * 100).toFixed(1) + '%' : '—';
+  const bar = (p, color) => `<div style="position:absolute;left:0;top:3px;bottom:3px;width:${Math.max(0, Math.min(100, p)).toFixed(1)}%;background:${color};opacity:.16;border-radius:0 4px 4px 0;pointer-events:none;"></div>`;
+  const grp = (items, cur, fn) => `<div style="display:flex;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:2px;flex-wrap:wrap;">` +
+    items.map(o => `<button onclick="${fn}(${o.v === null ? 'null' : "'" + o.v + "'"})" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border:none;border-radius:6px;cursor:pointer;background:${cur === o.v ? 'var(--accent)' : 'transparent'};color:${cur === o.v ? '#0d0d0f' : 'var(--muted)'};font-weight:${cur === o.v ? '700' : '400'};">${o.l}</button>`).join('') + '</div>';
+  const lbl = t => `<span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">${t}</span>`;
+  const stores = it3.all.outlet.filter(s => it3.sel.outlet.has(s));
+  const storeSel = `<select onchange="itSetSegStore(this.value)" style="font-family:var(--font-mono);font-size:10px;padding:6px 10px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;cursor:pointer;max-width:230px;">
+      <option value="">Semua (ikut filter atas)</option>${stores.map(s => `<option value="${itEsc(s)}"${stF === s ? ' selected' : ''}>${itEsc(s)}</option>`).join('')}</select>`;
+  const controls = `
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+      <div style="display:flex;gap:6px;align-items:center;">${lbl('Tampilkan:')}${grp([{v:'ito', l:'ITO'}, {v:'nominal', l:'Nominal Inventory'}, {v:'cogs', l:'COGS'}], metric, 'itSetSegMetric')}</div>
+      <div style="display:flex;gap:6px;align-items:center;">${lbl('Segmen:')}${grp([{v:null, l:'Semua'}].concat(it3.all.seg.map(s => ({v:s, l:IT_SEG_LABEL[s] || s}))), segF, 'itSetSegSeg')}</div>
+      <div style="display:flex;gap:6px;align-items:center;">${lbl('Store:')}${storeSel}</div>
     </div>`;
+  const period = n > 1 ? `${R.first} – ${R.last} (${n} bulan)` : R.first;
+  const basisTxt = (window._it3Basis || 'akhir') === 'rata' ? 'Rata-rata (awal+akhir)' : 'Akhir bulan';
+  const levelTxt = useTotal ? 'Level TOTAL (incl. DC, WIP, OD ke DC)' : 'Level STORE (OH + OD store saja' + (stF ? ' · ' + stF : '') + ')';
+  const body = rows.map((r, i) => {
+    const c = IT_SEG_COLOR[r.sg] || '#888';
+    return `<tr style="${i % 2 ? 'background:rgba(255,255,255,.02);' : ''}">
+      <td style="${tdL}"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;background:${c};"></span>${IT_SEG_LABEL[r.sg] || r.sg}</td>
+      <td style="${td}${metric === 'cogs' ? hl : ''}">${metric === 'cogs' ? bar(r.cogs / maxCogs * 100, c) : ''}${fmtRpFull(r.cogs)}</td>
+      <td style="${td};color:var(--muted);font-size:10px;">${pct(r.cogs, totCogs)}</td>
+      <td style="${td}${metric === 'nominal' ? hl : ''}">${metric === 'nominal' ? bar(r.inv / maxInv * 100, c) : ''}${fmtRpFull(r.inv)}</td>
+      <td style="${td};color:var(--muted);font-size:10px;">${pct(r.inv, totInv)}</td>
+      <td style="${td}">${metric === 'ito' ? bar((r.ito || 0) / maxIto * 100, c) : ''}${r.cogs > 0 ? badge(r.ito) : '<span style="color:var(--muted);font-size:10px;">—</span>'}</td>
+      <td style="${td}">${(r.cogs > 0 && r.dio != null) ? r.dio + ' hari' : '—'}</td>
+    </tr>`;
+  }).join('');
+  return `
+    <div class="cc" style="margin-top:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px;">
+        <div class="ct" style="margin-bottom:0;">Monitoring per Segmen — ${period}</div>
+        ${controls}
+      </div>
+      <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-bottom:10px;">
+        ${levelTxt} · Inventory akhir = ${R.last} · COGS &amp; ITO = periode terpilih · Basis: ${basisTxt}
+      </div>
+      ${rows.length ? `
+      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr>
+            <th style="${thL}">Segmen</th><th style="${th}${metric === 'cogs' ? hl : ''}">COGS${metric === 'cogs' ? ' ▼' : ''}</th><th style="${th}">% COGS</th>
+            <th style="${th}${metric === 'nominal' ? hl : ''}">Inventory Akhir${metric === 'nominal' ? ' ▼' : ''}</th><th style="${th}">% Inv</th>
+            <th style="${th}${metric === 'ito' ? hl : ''}">ITO${metric === 'ito' ? ' ▼' : ''}</th><th style="${th}">DIO</th>
+          </tr></thead>
+          <tbody>${body}</tbody>
+          <tfoot><tr style="background:rgba(255,255,255,.04);font-weight:700;">
+            <td style="${tdL};color:var(--accent);">TOTAL</td>
+            <td style="${td}">${fmtRpFull(totCogs)}</td><td style="${td}"></td>
+            <td style="${td}">${fmtRpFull(totInv)}</td><td style="${td}"></td>
+            <td style="${td}">${badge(totIto)}</td>
+            <td style="${td}">${totDio != null ? totDio + ' hari' : '—'}</td>
+          </tr></tfoot>
+        </table>
+      </div>` : `<div style="padding:18px;text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;">Tidak ada data segmen untuk filter ini.</div>`}
+    </div>`;
+}
+
+/* ── Monitoring per store (menggantikan tabel Distribusi OH Store & OD Store) ──
+   Level store (OH + OD store saja). Periode = bulan yang dipilih di filter atas.
+   Pilihan tampil: urut berdasarkan ITO atau Nominal Inventory; filter segmen lokal (Tigalapan, Mamu, DLL, Reject). */
+function it3StoreMon(R) {
+  const sel = it3.sel, segF = window._itStoreSeg || null, bl = new Set(R.bl);
+  const act = k => sel.kat.has(k) && (segF ? it3.katSeg[k] === segF : sel.seg.has(it3.katSeg[k]));
+  const per = {};
+  it3.store.forEach(x => {
+    if (!bl.has(x.b) || !sel.outlet.has(x.s) || !act(x.k)) return;
+    const m = (per[x.s] = per[x.s] || {});
+    const z = (m[x.b] = m[x.b] || {cogs:0, akhir:0, awal:0});
+    z.cogs += x.cogs; z.akhir += x.oh + x.od; z.awal += x.awal;
+  });
+  const basis = window._it3Basis || 'akhir', n = R.bl.length, rows = [];
+  Object.keys(per).forEach(s => {
+    const m = per[s]; let cogs = 0, avg = 0;
+    R.bl.forEach(b => { if (m[b]) cogs += m[b].cogs; });
+    const inv = m[R.last] ? m[R.last].akhir : 0;
+    if (basis === 'rata') {
+      let sum = 0;
+      R.bl.forEach(b => { const z = m[b]; if (z) sum += (z.awal > 0 ? (z.awal + z.akhir) / 2 : z.akhir); });
+      avg = sum / n;
+    } else {
+      avg = ((m[R.first] ? m[R.first].akhir : 0) + inv) / 2;
+    }
+    if (!cogs && !inv && !avg) return;
+    rows.push({ s, cogs, inv, avg });
+  });
+  rows.forEach(r => {
+    r.ito = r.avg > 0 ? r.cogs / r.avg : null;
+    r.dio = (r.ito && r.ito > 0) ? Math.round(30 * n / r.ito * 10) / 10 : null;
+    if (r.inv <= 0) { r.ito = null; r.dio = null; r.tutup = true; }   /* store tanpa stok di bulan terakhir (mis. sudah tutup): ITO tidak bermakna */
+  });
+  return rows;
+}
+function itSetStoreMetric(m) { window._itStoreMetric = m; itRender(); }
+function itSetStoreSeg(sg) { window._itStoreSeg = sg || null; itRender(); }
+
+function itStoreMonitorHtml(R, rows) {
+  const metric = window._itStoreMetric || 'ito', segF = window._itStoreSeg || null, n = R.bl.length;
+  rows.sort((a, b) => metric === 'ito' ? ((b.ito == null ? -1 : b.ito) - (a.ito == null ? -1 : a.ito)) : (b.inv - a.inv));
+  const totInv = rows.reduce((s, r) => s + r.inv, 0), totCogs = rows.reduce((s, r) => s + r.cogs, 0), totAvg = rows.reduce((s, r) => s + r.avg, 0);
+  const totIto = totAvg > 0 ? totCogs / totAvg : null;
+  const totDio = (totIto && totIto > 0) ? Math.round(30 * n / totIto * 10) / 10 : null;
+  const maxIto = Math.max(0.0001, ...rows.map(r => r.ito || 0)), maxInv = Math.max(1, ...rows.map(r => r.inv));
+  const th  = 'position:sticky;top:0;background:var(--surface);padding:8px 12px;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:400;border-bottom:1px solid var(--border);white-space:nowrap;text-align:right;';
+  const thL = th + 'text-align:left;';
+  const td  = 'padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;font-family:var(--font-mono);text-align:right;position:relative;';
+  const tdL = td + 'text-align:left;font-weight:600;';
+  const hl  = 'color:var(--accent);';
+  const badge = t => {
+    if (t == null) return '<span style="color:var(--muted)">—</span>';
+    const clr = t >= 4 ? '#4ade80' : t >= 2 ? '#facc15' : '#f87171';
+    const bg  = t >= 4 ? 'rgba(74,222,128,.15)' : t >= 2 ? 'rgba(234,179,8,.15)' : 'rgba(248,113,113,.15)';
+    return `<span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${clr};background:${bg};padding:2px 8px;border-radius:6px;">${t.toFixed(3)}×</span>`;
+  };
+  const bar = (pct, color) => `<div style="position:absolute;left:0;top:3px;bottom:3px;width:${Math.max(0, Math.min(100, pct)).toFixed(1)}%;background:${color};opacity:.16;border-radius:0 4px 4px 0;pointer-events:none;"></div>`;
+  const grp = (items, cur, fn) => `<div style="display:flex;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:2px;flex-wrap:wrap;">` +
+    items.map(o => `<button onclick="${fn}(${o.v === null ? 'null' : "'" + o.v + "'"})" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border:none;border-radius:6px;cursor:pointer;background:${cur === o.v ? 'var(--accent)' : 'transparent'};color:${cur === o.v ? '#0d0d0f' : 'var(--muted)'};font-weight:${cur === o.v ? '700' : '400'};">${o.l}</button>`).join('') + '</div>';
+  const lbl = t => `<span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">${t}</span>`;
+  const controls = `
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+      <div style="display:flex;gap:6px;align-items:center;">${lbl('Tampilkan:')}${grp([{v:'ito', l:'ITO'}, {v:'nominal', l:'Nominal Inventory'}], metric, 'itSetStoreMetric')}</div>
+      <div style="display:flex;gap:6px;align-items:center;">${lbl('Segmen:')}${grp([{v:null, l:'Semua'}].concat(it3.all.seg.map(s => ({v:s, l:IT_SEG_LABEL[s] || s}))), segF, 'itSetStoreSeg')}</div>
+    </div>`;
+  const body = rows.map((r, i) => {
+    const pct = totInv > 0 ? (r.inv / totInv * 100).toFixed(1) : '0.0';
+    return `<tr style="${i % 2 ? 'background:rgba(255,255,255,.02);' : ''}">
+      <td style="${td};text-align:left;color:var(--muted);">${i + 1}</td>
+      <td style="${tdL}">${r.s}${r.tutup ? ' <span style="font-weight:400;font-size:9px;color:var(--muted);">(tanpa stok bln terakhir)</span>' : ''}</td>
+      <td style="${td}${metric === 'nominal' ? hl : ''}">${metric === 'nominal' ? bar(r.inv / maxInv * 100, 'var(--accent)') : ''}${fmtRpFull(r.inv)}</td>
+      <td style="${td};color:var(--muted);font-size:10px;">${pct}%</td>
+      <td style="${td}">${fmtRpFull(r.cogs)}</td>
+      <td style="${td}">${metric === 'ito' ? bar((r.ito || 0) / maxIto * 100, '#47c8ff') : ''}${r.cogs > 0 ? badge(r.ito) : '<span style="color:var(--muted);font-size:10px;">—</span>'}</td>
+      <td style="${td}">${(r.cogs > 0 && r.dio != null) ? r.dio + ' hari' : '—'}</td>
+    </tr>`;
+  }).join('');
+  const period = n > 1 ? `${R.first} – ${R.last} (${n} bulan)` : R.first;
+  const basisTxt = (window._it3Basis || 'akhir') === 'rata' ? 'Rata-rata (awal+akhir)' : 'Akhir bulan';
+  return `
+    <div class="cc" style="margin-top:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px;">
+        <div class="ct" style="margin-bottom:0;">Monitoring per Store — ${period}</div>
+        ${controls}
+      </div>
+      <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-bottom:10px;">
+        Level store (OH + OD store saja, tanpa DC / WIP / OD ke DC) · Inventory akhir = ${R.last} · ITO &amp; COGS = periode terpilih · Basis: ${basisTxt}${segF ? ' · Segmen: ' + (IT_SEG_LABEL[segF] || segF) : ''}
+      </div>
+      ${rows.length ? `
+      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;max-height:460px;overflow-y:auto;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr>
+            <th style="${thL}">#</th><th style="${thL}">Store</th>
+            <th style="${th}${metric === 'nominal' ? hl : ''}">Inventory Akhir (OH+OD)${metric === 'nominal' ? ' ▼' : ''}</th><th style="${th}">% Inv</th>
+            <th style="${th}">COGS</th>
+            <th style="${th}${metric === 'ito' ? hl : ''}">ITO${metric === 'ito' ? ' ▼' : ''}</th><th style="${th}">DIO</th>
+          </tr></thead>
+          <tbody>${body}</tbody>
+          <tfoot><tr style="background:rgba(255,255,255,.04);font-weight:700;">
+            <td style="${td};text-align:left;"></td><td style="${tdL};color:var(--accent);">TOTAL STORE</td>
+            <td style="${td}">${fmtRpFull(totInv)}</td><td style="${td}"></td>
+            <td style="${td}">${fmtRpFull(totCogs)}</td><td style="${td}">${badge(totIto)}</td>
+            <td style="${td}">${totDio != null ? totDio + ' hari' : '—'}</td>
+          </tr></tfoot>
+        </table>
+      </div>` : `<div style="padding:18px;text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;">Tidak ada data store untuk filter ini.</div>`}
+    </div>`;
+}
+
+/* ── Tab halaman Inventory Turnover: Total Inventory | Per Store | Per Segmen ── */
+function itSyncTabUI() {
+  const t = window._itTab || 'total';
+  ['total', 'store', 'segmen'].forEach(k => {
+    const p = document.getElementById('it-tab-' + k);
+    if (p) p.style.display = (k === t) ? 'block' : 'none';
+    const b = document.getElementById('it-tabbtn-' + k);
+    if (b) {
+      b.style.color = (k === t) ? 'var(--accent)' : 'var(--muted)';
+      b.style.borderBottom = '2px solid ' + ((k === t) ? 'var(--accent)' : 'transparent');
+      b.style.fontWeight = (k === t) ? '700' : '400';
+    }
+  });
+}
+function itSetTab(t) { window._itTab = t; itSyncTabUI(); itRender(); }
+
+function itKpiCard(label, value, sub, color) {
+  return `<div class="ns-mc" style="--ns-ac:${color || 'var(--accent3)'}">
+      <div class="lbl">${label}</div>
+      <div class="val" style="font-size:clamp(13px,1.4vw,18px);${color ? 'color:' + color + ';' : ''}">${value}</div>
+      ${sub ? `<div class="sub" style="font-size:9.5px;">${sub}</div>` : ''}
+    </div>`;
+}
+function itItoColor(t) { return t == null ? 'var(--muted)' : t >= 4 ? '#4ade80' : t >= 2 ? '#facc15' : '#f87171'; }
+function itFmtX(t) { return t != null ? t.toFixed(3) + '×' : '—'; }
+
+function itStoreKpiHtml(R, rows) {
+  const n = R.bl.length;
+  const aktif = rows.filter(r => r.inv > 0);
+  const totCogs = rows.reduce((s, r) => s + r.cogs, 0), totInv = rows.reduce((s, r) => s + r.inv, 0), totAvg = rows.reduce((s, r) => s + r.avg, 0);
+  const totIto = totAvg > 0 ? totCogs / totAvg : null;
+  const totDio = (totIto && totIto > 0) ? Math.round(30 * n / totIto * 10) / 10 : null;
+  const wi = rows.filter(r => r.ito != null && r.cogs > 0);
+  const best = wi.reduce((a, r) => (!a || r.ito > a.ito) ? r : a, null);
+  const worst = wi.reduce((a, r) => (!a || r.ito < a.ito) ? r : a, null);
+  const big = rows.reduce((a, r) => (!a || r.inv > a.inv) ? r : a, null);
+  const segF = window._itStoreSeg ? ' · ' + (IT_SEG_LABEL[window._itStoreSeg] || window._itStoreSeg) : '';
+  return [
+    itKpiCard('Store Aktif', `${aktif.length} / ${it3.sel.outlet.size}`, `punya stok di ${R.last}${segF}`, 'var(--accent4)'),
+    itKpiCard('Total COGS', fmtRpFull(totCogs), `${n} bulan · level store`),
+    itKpiCard('Inventory Akhir', fmtRpFull(totInv), `OH + OD store · ${R.last}`, '#facc15'),
+    itKpiCard('ITO Store (Total)', itFmtX(totIto), totDio != null ? `DIO ${totDio} hari` : '', itItoColor(totIto)),
+    itKpiCard('ITO Tertinggi', best ? itFmtX(best.ito) : '—', best ? best.s : '', '#4ade80'),
+    itKpiCard('ITO Terendah', worst ? itFmtX(worst.ito) : '—', worst ? worst.s : '', '#f87171'),
+    itKpiCard('Inventory Terbesar', big ? fmtRp(big.inv) : '—', big ? `${big.s} · ${totInv > 0 ? (big.inv / totInv * 100).toFixed(1) : 0}%` : '', 'var(--accent2)'),
+  ].join('');
+}
+function itSegKpiHtml(R, rows) {
+  const n = R.bl.length;
+  const totCogs = rows.reduce((s, r) => s + r.cogs, 0), totInv = rows.reduce((s, r) => s + r.inv, 0), totAvg = rows.reduce((s, r) => s + r.avg, 0);
+  const totIto = totAvg > 0 ? totCogs / totAvg : null;
+  const totDio = (totIto && totIto > 0) ? Math.round(30 * n / totIto * 10) / 10 : null;
+  const cards = [itKpiCard('Total (Sesuai Filter)', itFmtX(totIto), `COGS ${fmtRp(totCogs)} · Inv ${fmtRp(totInv)}${totDio != null ? ' · DIO ' + totDio + ' hari' : ''}`, itItoColor(totIto))];
+  rows.forEach(r => cards.push(itKpiCard(IT_SEG_LABEL[r.sg] || r.sg, r.cogs > 0 ? itFmtX(r.ito) : '—',
+    `COGS ${fmtRp(r.cogs)} (${totCogs > 0 ? (r.cogs / totCogs * 100).toFixed(1) : 0}%) · Inv ${fmtRp(r.inv)} (${totInv > 0 ? (r.inv / totInv * 100).toFixed(1) : 0}%)`,
+    IT_SEG_COLOR[r.sg] || '#888')));
+  return cards.join('');
+}
+function itRenderStoreTab(R) {
+  const rows = it3StoreMon(R);
+  document.getElementById('it-store-kpi').innerHTML = itStoreKpiHtml(R, rows);
+  document.getElementById('it-store-wrap').innerHTML = itStoreMonitorHtml(R, rows);
+}
+function itRenderSegTab(R) {
+  const rows = it3SegMon(R);
+  document.getElementById('it-seg-kpi').innerHTML = itSegKpiHtml(R, rows);
+  document.getElementById('it-seg-wrap').innerHTML = itSegMonitorHtml(R, rows);
+}
+
+/* ── Monitoring per Warna (tab ketiga: DASH_WARNA) — di tab Total, Per Store, dan Per Segmen ──
+   Tigalapan: warna = varian kain (MERAH CABE 24S ≠ MERAH CABE 30S). Mamu / DLL / Reject: tidak ada level warna -> sama dengan kategori. */
+function it3WarnaParse(rows) {
+  const g = (r, k) => { for (const f in r) { if (f.trim().toLowerCase() === k.toLowerCase()) return r[f]; } return null; };
+  if (!rows || !rows.length || g(rows[0], 'Warna') === null || g(rows[0], 'OH Value') === null) return null;
+  const outlets = new Set(it3.all.outlet), W = [];
+  rows.forEach(r => {
+    const b = itNormBulan(g(r, 'Bulan')); if (!b) return;
+    const s = String(g(r, 'Store')).trim().toUpperCase();
+    W.push({ b, s, st: outlets.has(s), g: String(g(r, 'Segmen')).trim().toUpperCase(), k: String(g(r, 'Kategori')).trim().toUpperCase(),
+             w: String(g(r, 'Warna')).trim().toUpperCase(), cogs: itNum(g(r, 'COGS')), oh: itNum(g(r, 'OH Value')), od: itNum(g(r, 'OD Value')),
+             akhir: itNum(g(r, 'Inventory Akhir')), awal: itNum(g(r, 'Inventory Awal')) });
+  });
+  return W.length ? W : null;
+}
+function it3WarnaMon(R, ctx) {
+  const sel = it3.sel, bl = new Set(R.bl);
+  const segF = ctx === 'segmen' ? (window._itSegSeg || null) : ctx === 'store' ? (window._itStoreSeg || null) : null;
+  const stF = ctx === 'segmen' ? (window._itSegStore || null) : null;
+  const act = k => sel.kat.has(k) && (segF ? it3.katSeg[k] === segF : sel.seg.has(it3.katSeg[k]));
+  const useTotal = ctx !== 'store' && R.total && !stF;
+  const per = {};
+  it3.warna.forEach(x => {
+    if (!bl.has(x.b) || !act(x.k)) return;
+    let inv;
+    if (useTotal) inv = x.akhir;
+    else { if (!x.st || !(stF ? x.s === stF : sel.outlet.has(x.s))) return; inv = x.oh + x.od; }
+    const key = x.k + '\u0001' + x.w;
+    const o = (per[key] = per[key] || { k: x.k, w: x.w, g: x.g, m: {} });
+    const z = (o.m[x.b] = o.m[x.b] || { cogs: 0, akhir: 0, awal: 0 });
+    z.cogs += x.cogs; z.akhir += inv; z.awal += x.awal;
+  });
+  const basis = window._it3Basis || 'akhir', n = R.bl.length, rows = [];
+  Object.keys(per).forEach(key => {
+    const o = per[key], m = o.m; let cogs = 0, avg = 0;
+    R.bl.forEach(b => { if (m[b]) cogs += m[b].cogs; });
+    const inv = m[R.last] ? m[R.last].akhir : 0;
+    if (basis === 'rata') {
+      let sum = 0;
+      R.bl.forEach(b => { const z = m[b]; if (z) sum += (z.awal > 0 ? (z.awal + z.akhir) / 2 : z.akhir); });
+      avg = sum / n;
+    } else {
+      avg = ((m[R.first] ? m[R.first].akhir : 0) + inv) / 2;
+    }
+    if (!cogs && !inv && !avg) return;
+    const ito = (avg > 0 && inv > 0) ? cogs / avg : null;
+    rows.push({ k: o.k, w: o.w, g: o.g, cogs, inv, avg, ito, dio: (ito && ito > 0) ? Math.round(30 * n / ito * 10) / 10 : null });
+  });
+  return { rows, useTotal };
+}
+function itSetWarnaView(v) { window._itWarnaView = v; itRender(); }
+function itSetWarnaMetric(m) { window._itWarnaMetric = m; itRender(); }
+
+function itWarnaQuery() { return String(window._itWarnaQ || '').trim().toUpperCase().split(/\s+/).filter(Boolean); }
+function itWarnaTable(R, ctx) {
+  const { rows, useTotal } = it3WarnaMon(R, ctx), n = R.bl.length;
+  const metric = window._itWarnaMetric || 'nominal';
+  const stF = ctx === 'segmen' ? (window._itSegStore || null) : null;
+  const view = window._itWarnaView || 'semua';
+  const showW = view === 'semua' || view === 'TIGALAPAN';   /* Mamu / DLL / Reject tidak punya warna -> kolom Warna disembunyikan */
+  const all = view === 'semua' ? rows : rows.filter(r => r.g === view);   /* Tigalapan per warna; Mamu / DLL / Reject tidak punya warna -> kolom Warna kosong, tampil per kategori */
+  const q = itWarnaQuery();
+  const shown = q.length ? all.filter(r => { const t = r.w + ' ' + r.k; return q.every(w => t.includes(w)); }) : all;
+  shown.sort((a, b) => metric === 'ito' ? ((b.ito == null ? -1 : b.ito) - (a.ito == null ? -1 : a.ito)) : metric === 'cogs' ? (b.cogs - a.cogs) : (b.inv - a.inv));
+  const sum = (arr, f) => arr.reduce((s, r) => s + f(r), 0);
+  const allCogs = sum(all, r => r.cogs), allInv = sum(all, r => r.inv);
+  const totCogs = sum(shown, r => r.cogs), totInv = sum(shown, r => r.inv), totAvg = sum(shown, r => r.avg);
+  const totIto = totAvg > 0 ? totCogs / totAvg : null;
+  const totDio = (totIto && totIto > 0) ? Math.round(30 * n / totIto * 10) / 10 : null;
+  const maxIto = Math.max(0.0001, ...shown.map(r => r.ito || 0)), maxInv = Math.max(1, ...shown.map(r => r.inv)), maxCogs = Math.max(1, ...shown.map(r => r.cogs));
+  const th  = 'position:sticky;top:0;background:var(--surface);padding:8px 12px;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:400;border-bottom:1px solid var(--border);white-space:nowrap;text-align:right;z-index:1;';
+  const thL = th + 'text-align:left;';
+  const td  = 'padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;font-family:var(--font-mono);text-align:right;position:relative;';
+  const tdL = td + 'text-align:left;font-weight:600;';
+  const hl  = 'color:var(--accent);';
+  const badge = t => {
+    if (t == null) return '<span style="color:var(--muted)">—</span>';
+    const clr = t >= 4 ? '#4ade80' : t >= 2 ? '#facc15' : '#f87171';
+    const bg  = t >= 4 ? 'rgba(74,222,128,.15)' : t >= 2 ? 'rgba(234,179,8,.15)' : 'rgba(248,113,113,.15)';
+    return `<span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${clr};background:${bg};padding:2px 8px;border-radius:6px;">${t.toFixed(3)}×</span>`;
+  };
+  const pct = (v, t) => t > 0 ? (v / t * 100).toFixed(1) + '%' : '—';
+  const bar = (p, color) => `<div style="position:absolute;left:0;top:3px;bottom:3px;width:${Math.max(0, Math.min(100, p)).toFixed(1)}%;background:${color};opacity:.16;border-radius:0 4px 4px 0;pointer-events:none;"></div>`;
+  const c = '#47c8ff';
+  const period = n > 1 ? `${R.first} – ${R.last} (${n} bulan)` : R.first;
+  const basisTxt = (window._it3Basis || 'akhir') === 'rata' ? 'Rata-rata (awal+akhir)' : 'Akhir bulan';
+  const levelTxt = useTotal ? 'Level TOTAL (incl. DC, WIP, OD ke DC)' : 'Level STORE (OH + OD store saja' + (stF ? ' · ' + stF : '') + ')';
+  const body = shown.map((r, i) => `<tr style="${i % 2 ? 'background:rgba(255,255,255,.02);' : ''}">
+      ${showW ? `<td style="${tdL}">${r.g === 'TIGALAPAN' ? itEsc(r.w) : '<span style="color:var(--muted);font-weight:400;">—</span>'}</td>
+      <td style="${td};text-align:left;color:var(--muted);font-size:10px;">${itEsc(r.k)}</td>` : `<td style="${tdL}">${itEsc(r.k)}</td>`}
+      <td style="${td}${metric === 'cogs' ? hl : ''}">${metric === 'cogs' ? bar(r.cogs / maxCogs * 100, c) : ''}${fmtRpFull(r.cogs)}</td>
+      <td style="${td};color:var(--muted);font-size:10px;">${pct(r.cogs, allCogs)}</td>
+      <td style="${td}${metric === 'nominal' ? hl : ''}">${metric === 'nominal' ? bar(r.inv / maxInv * 100, c) : ''}${fmtRpFull(r.inv)}</td>
+      <td style="${td};color:var(--muted);font-size:10px;">${pct(r.inv, allInv)}</td>
+      <td style="${td}">${metric === 'ito' ? bar((r.ito || 0) / maxIto * 100, c) : ''}${r.cogs > 0 ? badge(r.ito) : '<span style="color:var(--muted);font-size:10px;">—</span>'}</td>
+      <td style="${td}">${(r.cogs > 0 && r.dio != null) ? r.dio + ' hari' : '—'}</td>
+    </tr>`).join('');
+  const cnt = q.length ? `${shown.length} dari ${all.length} baris` : `${shown.length} baris`;
+  return `
+      <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-bottom:10px;">
+        ${period} · ${cnt} · ${levelTxt} · Inventory akhir = ${R.last} · COGS &amp; ITO = periode terpilih · Basis: ${basisTxt} · Mengikuti filter Bulan / Store / Segmen / Kategori${q.length ? ' · % terhadap total segmen yang dipilih' : ''}
+      </div>
+      ${shown.length ? `
+      <div style="overflow:auto;max-height:560px;border:1px solid var(--border);border-radius:8px;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr>
+            ${showW ? `<th style="${thL}">Warna</th>` : ''}<th style="${thL}">Kategori</th>
+            <th style="${th}${metric === 'cogs' ? hl : ''}">COGS${metric === 'cogs' ? ' ▼' : ''}</th><th style="${th}">% COGS</th>
+            <th style="${th}${metric === 'nominal' ? hl : ''}">Inventory Akhir${metric === 'nominal' ? ' ▼' : ''}</th><th style="${th}">% Inv</th>
+            <th style="${th}${metric === 'ito' ? hl : ''}">ITO${metric === 'ito' ? ' ▼' : ''}</th><th style="${th}">DIO</th>
+          </tr></thead>
+          <tbody>${body}</tbody>
+          <tfoot><tr style="background:rgba(255,255,255,.04);font-weight:700;">
+            <td style="${tdL};color:var(--accent);">TOTAL${q.length ? ' (hasil cari)' : ''}</td>${showW ? `<td style="${td}"></td>` : ''}
+            <td style="${td}">${fmtRpFull(totCogs)}</td><td style="${td}"></td>
+            <td style="${td}">${fmtRpFull(totInv)}</td><td style="${td}"></td>
+            <td style="${td}">${badge(totIto)}</td>
+            <td style="${td}">${totDio != null ? totDio + ' hari' : '—'}</td>
+          </tr></tfoot>
+        </table>
+      </div>` : `<div style="padding:18px;text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;">${q.length ? 'Tidak ada warna / kategori yang cocok dengan pencarian.' : 'Tidak ada data untuk filter ini.'}</div>`}`;
+}
+/* ketik langsung memfilter (tanpa Enter); hanya isi tabel yang digambar ulang sehingga kursor di kotak cari tidak hilang */
+function itWarnaSearch(v) {
+  window._itWarnaQ = v;
+  const box = document.getElementById('it-warna-tbl');
+  if (box && itReady && it3.built) box.innerHTML = itWarnaTable(it3Calc(), window._itTab || 'total');
+}
+function itWarnaHtml(R, ctx) {
+  if (!it3.warna) {
+    return `<div class="cc" style="margin-top:14px;"><div class="ct">Monitoring per Warna</div>
+      <div style="padding:16px;text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;line-height:1.7;">
+      Data warna belum tersedia.<br><small>Impor <b>DASH_WARNA.csv</b> ke tab <b>DASH_WARNA</b> di Google Sheet (Replace current sheet, jangan centang konversi teks), lalu ${IT_WARNA_GID ? 'pastikan tab itu ikut dipublikasikan' : 'isi <b>IT_WARNA_GID</b> di index.html dengan gid tab tersebut'}.</small></div></div>`;
+  }
+  const metric = window._itWarnaMetric || 'nominal';
+  const grp = (items, cur, fn) => `<div style="display:flex;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:2px;flex-wrap:wrap;">` +
+    items.map(o => `<button onclick="${fn}('${o.v}')" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border:none;border-radius:6px;cursor:pointer;background:${cur === o.v ? 'var(--accent)' : 'transparent'};color:${cur === o.v ? '#0d0d0f' : 'var(--muted)'};font-weight:${cur === o.v ? '700' : '400'};">${o.l}</button>`).join('') + '</div>';
+  const lbl = t => `<span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">${t}</span>`;
+  return `
+    <div class="cc" style="margin-top:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px;">
+        <div class="ct" style="margin-bottom:0;">Monitoring per Warna / Kategori</div>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+          <div style="display:flex;gap:6px;align-items:center;">${lbl('Tampilkan:')}${grp([{v:'ito', l:'ITO'}, {v:'nominal', l:'Nominal Inventory'}, {v:'cogs', l:'COGS'}], metric, 'itSetWarnaMetric')}</div>
+          <div style="display:flex;gap:6px;align-items:center;">${lbl('Segmen:')}${grp([{v:'semua', l:'Semua'}, {v:'TIGALAPAN', l:'Tigalapan'}, {v:'MAMU', l:'Mamu'}, {v:'DLL', l:'DLL'}, {v:'REJECT', l:'Reject'}], window._itWarnaView || 'semua', 'itSetWarnaView')}</div>
+          <div style="display:flex;gap:6px;align-items:center;position:relative;">
+            <i class="ti ti-search" style="position:absolute;left:10px;font-size:12px;color:var(--muted);pointer-events:none;"></i>
+            <input id="it-warna-q" type="search" value="${itEsc(window._itWarnaQ || '')}" placeholder="Cari warna / kategori, mis. hitam" autocomplete="off" oninput="itWarnaSearch(this.value)"
+              style="font-family:var(--font-mono);font-size:11px;padding:7px 12px 7px 30px;width:220px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;outline:none;">
+          </div>
+        </div>
+      </div>
+      <div id="it-warna-tbl">${itWarnaTable(R, ctx)}</div>
+    </div>`;
+}
+function itRenderWarna(R) {
+  const t = window._itTab || 'total', id = 'it-warna-' + t, el = document.getElementById(id);
+  ['total', 'store', 'segmen'].forEach(k => { if (k !== t) { const e = document.getElementById('it-warna-' + k); if (e) e.innerHTML = ''; } });
+  if (el) el.innerHTML = itWarnaHtml(R, t);
+}
+
+function it3WarnaTry() {
+  if (!it3._wRows || !it3.all.outlet.length) return;
+  it3.warna = it3WarnaParse(it3._wRows);
+  if (itReady && it3.built && document.getElementById('page-invturn').classList.contains('active')) itRender();
 }
 
 /* ── Ganti mode tampilan breakdown (value/qty) & render ulang ── */
@@ -9318,13 +9703,8 @@ function itToggleDD(key, e) {
 }
 function itDDChanged(key) {
   const checked = Array.from(document.querySelectorAll('#it-list-'+key+' input:checked')).map(i=>i.value);
-  /* Simpan persis yang tercentang — jangan fallback ke "semua" saat 0 dicentang,
-     supaya "Hapus Semua" benar-benar menampilkan kosong (lihat guard nBulan di itRender). */
-  if (key==='bulan') {
-    window._itSelBulan  = new Set(checked);
-  } else {
-    window._itSelOutlet = new Set(checked);
-  }
+  /* Simpan persis yang tercentang — "Hapus Semua" benar-benar menampilkan kosong. */
+  it3.sel[key] = new Set(checked);
   itUpdatePillLbl(key);
   itUpdateReset();
   itRender();
@@ -9334,35 +9714,28 @@ function itDDAll(key, state) {
   itDDChanged(key);
 }
 function itResetFilter() {
-  const allBulan  = window._itAllBulan  || [];
-  const allOutlet = window._itAllOutlet || [];
-  document.querySelectorAll('#it-list-bulan  input').forEach(b=>b.checked=true);
-  document.querySelectorAll('#it-list-outlet input').forEach(b=>b.checked=true);
-  window._itSelBulan  = new Set(allBulan);
-  window._itSelOutlet = new Set(allOutlet);
-  itUpdatePillLbl('bulan');
-  itUpdatePillLbl('outlet');
+  IT_KEYS.forEach(k => {
+    document.querySelectorAll('#it-list-'+k+' input').forEach(b=>b.checked=true);
+    it3.sel[k] = new Set(it3.all[k]);
+    itUpdatePillLbl(k);
+  });
   itUpdateReset();
   itRender();
 }
 function itUpdateReset() {
-  const allBulan  = window._itAllBulan  || [];
-  const allOutlet = window._itAllOutlet || [];
-  const selB = window._itSelBulan  || new Set(allBulan);
-  const selO = window._itSelOutlet || new Set(allOutlet);
-  const isDefault = selB.size===allBulan.length && selO.size===allOutlet.length;
+  const isDefault = IT_KEYS.every(k => it3.sel[k] && it3.sel[k].size === it3.all[k].length);
   const r = document.getElementById('it-reset');
   if (r) r.style.display = isDefault ? 'none' : 'flex';
 }
 function itUpdatePillLbl(key) {
-  const allItems = key==='bulan' ? (window._itAllBulan||[]) : (window._itAllOutlet||[]);
+  const allItems = it3.all[key] || [];
   const checked  = Array.from(document.querySelectorAll('#it-list-'+key+' input:checked')).map(i=>i.value);
   const pill = document.getElementById('it-pill-'+key);
   const lbl  = document.getElementById('it-lbl-'+key);
-  const dflt = key==='bulan' ? 'Semua Bulan' : 'Semua Store';
+  if (!pill || !lbl) return;
   if (!checked.length)                       { lbl.textContent='Tidak ada'; pill.classList.add('on'); }
-  else if (checked.length===allItems.length) { lbl.textContent=dflt; pill.classList.remove('on'); }
-  else if (checked.length===1)               { lbl.textContent=checked[0]; pill.classList.add('on'); }
+  else if (checked.length===allItems.length) { lbl.textContent=IT_DFLT_LBL[key]; pill.classList.remove('on'); }
+  else if (checked.length===1)               { lbl.textContent = key==='seg' ? (IT_SEG_LABEL[checked[0]]||checked[0]) : checked[0]; pill.classList.add('on'); }
   else                                       { lbl.textContent=checked.length+' dipilih'; pill.classList.add('on'); }
 }
 
