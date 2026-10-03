@@ -1710,7 +1710,7 @@ tr:hover td{background:var(--surface2);}
             <div class="qf-div"></div>
       <div class="qf-pill" id="it-pill-seg" onclick="itToggleDD('seg',event)">
         <i class="ti ti-category"></i>
-        <span id="it-lbl-seg">Semua Segmen</span>
+        <span id="it-lbl-seg">Semua Brand</span>
         <i class="ti ti-chevron-down qf-caret"></i>
       </div>
       <div class="qf-pill" id="it-pill-kat" onclick="itToggleDD('kat',event)">
@@ -1722,11 +1722,6 @@ tr:hover td{background:var(--surface2);}
         <i class="ti ti-x"></i> Reset
       </button>
       <div class="qf-div"></div>
-      <span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;">Basis:</span>
-      <div style="display:flex;background:var(--bg);border:1px solid var(--border);border-radius:100px;padding:2px;flex-shrink:0;">
-        <button id="it-basis-akhir" onclick="itSetBasis('akhir')" title="COGS ÷ inventory akhir bulan (tampilan sebelumnya)" style="font-family:var(--font-mono);font-size:10px;padding:4px 10px;border:none;border-radius:100px;cursor:pointer;white-space:nowrap;">Akhir bulan</button>
-        <button id="it-basis-rata" onclick="itSetBasis('rata')" title="COGS ÷ rata-rata (awal+akhir) — sama dengan Excel ITO_FINAL" style="font-family:var(--font-mono);font-size:10px;padding:4px 10px;border:none;border-radius:100px;cursor:pointer;white-space:nowrap;">Rata-rata</button>
-      </div>
       <span id="it-mode" style="display:none;font-family:var(--font-mono);font-size:10px;padding:4px 10px;border-radius:100px;border:1px solid var(--border);white-space:nowrap;"></span>
     </div>
 
@@ -1753,7 +1748,7 @@ tr:hover td{background:var(--surface2);}
     </div>
     <div class="qf-dd" id="it-dd-seg">
       <div class="qf-dd-hdr">
-        <span class="qf-dd-ttl">Segmen</span>
+        <span class="qf-dd-ttl">Brand</span>
         <div class="qf-dd-acts">
           <button class="qf-dd-act qf-dd-act-all" onclick="itDDAll('seg',true)">Semua</button>
           <button class="qf-dd-act qf-dd-act-clear" onclick="itDDAll('seg',false)">Hapus</button>
@@ -1786,7 +1781,7 @@ tr:hover td{background:var(--surface2);}
         <div id="it-tabbar" style="display:flex;gap:4px;margin:0 0 16px;border-bottom:1px solid var(--border);overflow-x:auto;">
           <button id="it-tabbtn-total" onclick="itSetTab('total')" style="background:none;border:none;border-bottom:2px solid transparent;padding:9px 16px;font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;cursor:pointer;white-space:nowrap;"><i class="ti ti-chart-bar" style="margin-right:6px;"></i>Total Inventory</button>
           <button id="it-tabbtn-store" onclick="itSetTab('store')" style="background:none;border:none;border-bottom:2px solid transparent;padding:9px 16px;font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;cursor:pointer;white-space:nowrap;"><i class="ti ti-building-store" style="margin-right:6px;"></i>Per Store</button>
-          <button id="it-tabbtn-segmen" onclick="itSetTab('segmen')" style="background:none;border:none;border-bottom:2px solid transparent;padding:9px 16px;font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;cursor:pointer;white-space:nowrap;"><i class="ti ti-category" style="margin-right:6px;"></i>Per Segmen</button>
+          <button id="it-tabbtn-segmen" onclick="itSetTab('segmen')" style="background:none;border:none;border-bottom:2px solid transparent;padding:9px 16px;font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;cursor:pointer;white-space:nowrap;"><i class="ti ti-category" style="margin-right:6px;"></i>Per Brand</button>
         </div>
         <div id="it-tab-total">
         <div id="it-kpi-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:16px;"></div>
@@ -1794,7 +1789,8 @@ tr:hover td{background:var(--surface2);}
         <!-- Tabel detail per Outlet / per Bulan -->
         <div class="cc" style="margin-bottom:14px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-            <div class="ct" style="margin-bottom:0;">Per Bulan</div>
+            <div class="ct" style="margin-bottom:0;">Per Bulan <span id="it-bulan-basis" style="color:var(--muted);font-weight:400;"></span></div>
+            <div id="it-colwrap-bulan"></div>
           </div>
           <div style="overflow-x:auto;max-height:420px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;">
             <table style="width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:11px;">
@@ -3543,6 +3539,16 @@ tr:hover td{background:var(--surface2);}
           <button class="ca-btn" onclick="checkAll('s-alasan',false)">× Hapus Semua</button>
         </div>
         <div class="cb-grp" id="s-alasan"></div>
+      </div>
+
+      <div class="set-sec">
+        <div class="set-sec-ttl"><i class="ti ti-calculator"></i>Inventory Turnover</div>
+        <div class="sname">Basis Perhitungan</div>
+        <div class="sdesc">Pembagi inventory untuk menghitung ITO</div>
+        <div class="cb-grp">
+          <label class="cb-item"><input type="radio" name="it-basis" value="rata" checked onchange="itSetBasis('rata')"> Rata-rata — COGS ÷ ((awal + akhir) ÷ 2)</label>
+          <label class="cb-item"><input type="radio" name="it-basis" value="akhir" onchange="itSetBasis('akhir')"> Akhir bulan — COGS ÷ inventory akhir</label>
+        </div>
       </div>
 
       <button class="apply-btn" onclick="applyAndReturn()">
@@ -8576,9 +8582,9 @@ const IT_KAT_GID   = '1244305849';   /* tab DASH_KATEGORI */
 const IT_WARNA_GID = '';             /* tab DASH_WARNA (opsional) — isi dengan gid tab bila sudah dipublikasikan; kosong = coba lewat nama tab (gviz) */
 const IT_GVIZ      = 'https://docs.google.com/spreadsheets/d/1yT78Hl1K6V1Y5ECA-v0w-SV77fc5qMES9YlozIHUPMg/gviz/tq?tqx=out:csv&sheet=';
 const IT_SEG_ORDER = ['TIGALAPAN','MAMU','DLL','REJECT','BELUM DIPETAKAN'];
-const IT_SEG_LABEL = {TIGALAPAN:'Tigalapan', MAMU:'Mamu', DLL:'DLL', REJECT:'Reject', 'BELUM DIPETAKAN':'Belum dipetakan'};
+const IT_SEG_LABEL = {TIGALAPAN:'TIGALAPAN', MAMU:'MAMU', DLL:'LAINNYA', REJECT:'REJECT', 'BELUM DIPETAKAN':'BELUM DIPETAKAN'};
 const IT_KEYS      = ['bulan','outlet','seg','kat'];
-const IT_DFLT_LBL  = {bulan:'Semua Bulan', outlet:'Semua Store', seg:'Semua Segmen', kat:'Semua Kategori'};
+const IT_DFLT_LBL  = {bulan:'Semua Bulan', outlet:'Semua Store', seg:'Semua Brand', kat:'Semua Kategori'};
 var it3 = { store:[], kat:[], warna:null, _wRows:null, katSeg:{}, all:{bulan:[],outlet:[],seg:[],kat:[]}, sel:{}, built:false };
 
 function itLoad() {
@@ -8877,6 +8883,7 @@ function itInit() {
     mk('it-list-outlet', 'outlet', it3.all.outlet.map(v => ({v, l:v})));
     mk('it-list-seg',    'seg',    it3.all.seg.map(v => ({v, l:IT_SEG_LABEL[v] || v})));
     mk('it-list-kat',    'kat',    it3.all.kat.map(v => ({v, l:v})));
+    document.querySelectorAll('#it-list-seg input').forEach(i => { if (i.value === 'BELUM DIPETAKAN') i.closest('label').style.display = 'none'; });   /* tetap terhitung, hanya disembunyikan */
     IT_KEYS.forEach(itUpdatePillLbl);
     itUpdateReset();
     it3.built = true;
@@ -8922,15 +8929,18 @@ function it3Calc() {
   return { total, bl, mon, first:bl[0], last, stores, dist };
 }
 
+try { const _b = localStorage.getItem('it_basis'); if (_b === 'akhir' || _b === 'rata') window._it3Basis = _b; } catch (e) {}
 function itSyncBasisUI() {
   const b = window._it3Basis || 'rata';
+  document.querySelectorAll('input[name="it-basis"]').forEach(r => { r.checked = (r.value === b); });
   const on  = 'background:var(--accent);color:#0d0d0f;font-weight:700;';
   const off = 'background:transparent;color:var(--muted);font-weight:400;';
   const a = document.getElementById('it-basis-akhir'), r = document.getElementById('it-basis-rata');
   if (a) a.style.cssText += (b === 'akhir' ? on : off);
   if (r) r.style.cssText += (b === 'rata' ? on : off);
 }
-function itSetBasis(b) { window._it3Basis = b; itSyncBasisUI(); itRender(); }
+function itSetBasis(b) { window._it3Basis = b; try { localStorage.setItem('it_basis', b); } catch (e) {} itSyncBasisUI(); itRender(); }
+itSyncBasisUI();
 
 /* ── Main Render ── */
 function itRender() {
@@ -9001,7 +9011,11 @@ function itRenderTable(R, basis, avgM, avgInventory, grandCogs, grandTurnover, g
   const thR = thS + 'text-align:right;';
   const tdB = 'padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text);font-size:11px;';
   const tdR = tdB + 'text-align:right;font-family:var(--font-mono);';
-  const rata = basis === 'rata';
+  const cAwal = itColOn('bulan', 'awal'), cRata = itColOn('bulan', 'rata');
+  const lbl = document.getElementById('it-bulan-basis');
+  if (lbl) lbl.textContent = '· basis ' + (basis === 'rata' ? 'rata-rata' : 'akhir bulan');
+  const cw = document.getElementById('it-colwrap-bulan');
+  if (cw) cw.innerHTML = itColMenuHtml('bulan');
 
   function turnBadge(t) {
     if (t == null) return '<span style="color:var(--muted)">—</span>';
@@ -9009,35 +9023,40 @@ function itRenderTable(R, basis, avgM, avgInventory, grandCogs, grandTurnover, g
     const bg  = t >= 4 ? 'rgba(74,222,128,.15)' : t >= 2 ? 'rgba(234,179,8,.15)' : 'rgba(248,113,113,.15)';
     return `<span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${clr};background:${bg};padding:2px 8px;border-radius:6px;">${t.toFixed(3)}×</span>`;
   }
+  const dash = '<span style="color:var(--muted)">—</span>';
 
   document.getElementById('it-tbl-head').innerHTML = `<tr>
     <th style="${thS}">Bulan</th>
     <th style="${thR}">Total COGS</th>
+    ${cAwal ? `<th style="${thR}">Inventory Awal</th>` : ''}
     <th style="${thR}">Inventory Akhir</th>
-    ${rata ? `<th style="${thR}">Rata-rata Inventory</th>` : ''}
+    ${cRata ? `<th style="${thR}">Rata-rata Inventory</th>` : ''}
     <th style="${thR}">ITO</th>
     <th style="${thR}">DIO</th>
   </tr>`;
 
   const rows = R.bl.map(b => {
     const z = R.mon[b], cogs = z.cogs, inv = z.akhir;
-    const den = rata ? avgM(b) : inv;
+    const den = basis === 'rata' ? avgM(b) : inv;
     const turn = den > 0 && cogs > 0 ? cogs / den : null;
     const dio  = (turn && turn > 0) ? Math.round(30 / turn * 10) / 10 : null;
     return `<tr>
       <td style="${tdB};font-weight:600;">${b}</td>
       <td style="${tdR}">${cogs > 0 ? fmtRpFull(cogs) : '<span style="color:var(--muted);font-size:10px;">Tidak ada data COGS</span>'}</td>
+      ${cAwal ? `<td style="${tdR}">${z.awal > 0 ? fmtRpFull(z.awal) : dash}</td>` : ''}
       <td style="${tdR}">${fmtRpFull(inv)}</td>
-      ${rata ? `<td style="${tdR}">${fmtRpFull(avgM(b))}</td>` : ''}
+      ${cRata ? `<td style="${tdR}">${fmtRpFull(avgM(b))}</td>` : ''}
       <td style="${tdR}">${cogs > 0 ? turnBadge(turn) : '<span style="color:var(--muted);font-size:10px;">—</span>'}</td>
       <td style="${tdR}">${(cogs > 0 && dio != null) ? dio + ' hari' : '—'}</td>
     </tr>`;
   });
+  const avgAll = R.bl.reduce((s, b) => s + avgM(b), 0) / R.bl.length;
   rows.push(`<tr style="background:rgba(255,255,255,.04);font-weight:700;">
-    <td style="${tdB}font-weight:700;color:var(--accent)">PERIODE</td>
+    <td style="${tdB}font-weight:700;color:var(--accent)">GRAND TOTAL</td>
     <td style="${tdR}font-weight:700;">${fmtRpFull(grandCogs)}</td>
-    <td style="${tdR}font-weight:700;">${rata ? '<span style="color:var(--muted);font-weight:400;">—</span>' : '<span style="color:var(--muted);font-size:9px;font-weight:400;">rata-rata </span>' + fmtRpFull(avgInventory)}</td>
-    ${rata ? `<td style="${tdR}font-weight:700;">${fmtRpFull(avgInventory)}</td>` : ''}
+    ${cAwal ? `<td style="${tdR}">${dash}</td>` : ''}
+    <td style="${tdR}">${dash}</td>
+    ${cRata ? `<td style="${tdR}font-weight:700;">${fmtRpFull(avgAll)}</td>` : ''}
     <td style="${tdR}">${turnBadge(grandTurnover)}</td>
     <td style="${tdR}font-weight:700;">${grandDIO != null ? grandDIO + ' hari' : '—'}</td>
   </tr>`);
@@ -9214,79 +9233,6 @@ function itSetSegMetric(m) { window._itSegMetric = m; itRender(); }
 function itSetSegSeg(sg) { window._itSegSeg = sg || null; itRender(); }
 function itSetSegStore(s) { window._itSegStore = s || null; itRender(); }
 
-function itSegMonitorHtml(R, rows) {
-  const n = R.bl.length;
-  const metric = window._itSegMetric || 'nominal', segF = window._itSegSeg || null, stF = window._itSegStore || null;
-  const useTotal = R.total && !stF;
-  const totCogs = rows.reduce((s, r) => s + r.cogs, 0), totInv = rows.reduce((s, r) => s + r.inv, 0), totAvg = rows.reduce((s, r) => s + r.avg, 0);
-  const totIto = totAvg > 0 ? totCogs / totAvg : null;
-  const totDio = (totIto && totIto > 0) ? Math.round(30 * n / totIto * 10) / 10 : null;
-  const maxIto = Math.max(0.0001, ...rows.map(r => r.ito || 0)), maxInv = Math.max(1, ...rows.map(r => r.inv)), maxCogs = Math.max(1, ...rows.map(r => r.cogs));
-  const th  = 'position:sticky;top:0;background:var(--surface);padding:8px 12px;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:400;border-bottom:1px solid var(--border);white-space:nowrap;text-align:right;';
-  const thL = th + 'text-align:left;';
-  const td  = 'padding:9px 12px;border-bottom:1px solid var(--border);font-size:11px;font-family:var(--font-mono);text-align:right;position:relative;';
-  const tdL = td + 'text-align:left;font-weight:600;';
-  const hl  = 'color:var(--accent);';
-  const badge = t => {
-    if (t == null) return '<span style="color:var(--muted)">—</span>';
-    const clr = t >= 4 ? '#4ade80' : t >= 2 ? '#facc15' : '#f87171';
-    const bg  = t >= 4 ? 'rgba(74,222,128,.15)' : t >= 2 ? 'rgba(234,179,8,.15)' : 'rgba(248,113,113,.15)';
-    return `<span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${clr};background:${bg};padding:2px 8px;border-radius:6px;">${t.toFixed(3)}×</span>`;
-  };
-  const pct = (v, t) => t > 0 ? (v / t * 100).toFixed(1) + '%' : '—';
-  const bar = (p, color) => `<div style="position:absolute;left:0;top:3px;bottom:3px;width:${Math.max(0, Math.min(100, p)).toFixed(1)}%;background:${color};opacity:.16;border-radius:0 4px 4px 0;pointer-events:none;"></div>`;
-  const grp = (items, cur, fn) => `<div style="display:flex;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:2px;flex-wrap:wrap;">` +
-    items.map(o => `<button onclick="${fn}(${o.v === null ? 'null' : "'" + o.v + "'"})" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border:none;border-radius:6px;cursor:pointer;background:${cur === o.v ? 'var(--accent)' : 'transparent'};color:${cur === o.v ? '#0d0d0f' : 'var(--muted)'};font-weight:${cur === o.v ? '700' : '400'};">${o.l}</button>`).join('') + '</div>';
-  const lbl = t => `<span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">${t}</span>`;
-  const stores = it3.all.outlet.filter(s => it3.sel.outlet.has(s));
-  const storeSel = `<select onchange="itSetSegStore(this.value)" style="font-family:var(--font-mono);font-size:10px;padding:6px 10px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;cursor:pointer;max-width:230px;">
-      <option value="">Semua (ikut filter atas)</option>${stores.map(s => `<option value="${itEsc(s)}"${stF === s ? ' selected' : ''}>${itEsc(s)}</option>`).join('')}</select>`;
-  const controls = `
-    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
-      <div style="display:flex;gap:6px;align-items:center;">${lbl('Tampilkan:')}${grp([{v:'ito', l:'ITO'}, {v:'nominal', l:'Nominal Inventory'}, {v:'cogs', l:'COGS'}], metric, 'itSetSegMetric')}</div>
-      <div style="display:flex;gap:6px;align-items:center;">${lbl('Segmen:')}${grp([{v:null, l:'Semua'}].concat(it3.all.seg.map(s => ({v:s, l:IT_SEG_LABEL[s] || s}))), segF, 'itSetSegSeg')}</div>
-      <div style="display:flex;gap:6px;align-items:center;">${lbl('Store:')}${storeSel}</div>
-    </div>`;
-  const period = n > 1 ? `${R.first} – ${R.last} (${n} bulan)` : R.first;
-  const basisTxt = (window._it3Basis || 'rata') === 'rata' ? 'Rata-rata (awal+akhir)' : 'Akhir bulan';
-  const levelTxt = useTotal ? 'Level TOTAL (incl. DC, WIP, OD ke DC)' : 'Level STORE (OH + OD store saja' + (stF ? ' · ' + stF : '') + ')';
-  const body = rows.map((r, i) => {
-    const c = IT_SEG_COLOR[r.sg] || '#888';
-    return `<tr style="${i % 2 ? 'background:rgba(255,255,255,.02);' : ''}">
-      <td style="${tdL}"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;background:${c};"></span>${IT_SEG_LABEL[r.sg] || r.sg}</td>
-      <td style="${td}${metric === 'cogs' ? hl : ''}">${metric === 'cogs' ? bar(r.cogs / maxCogs * 100, c) : ''}${fmtRpFull(r.cogs)}</td>
-      <td style="${td}${metric === 'nominal' ? hl : ''}">${metric === 'nominal' ? bar(r.inv / maxInv * 100, c) : ''}${fmtRpFull(r.inv)}</td>
-      <td style="${td}">${metric === 'ito' ? bar((r.ito || 0) / maxIto * 100, c) : ''}${r.cogs > 0 ? badge(r.ito) : '<span style="color:var(--muted);font-size:10px;">—</span>'}</td>
-      <td style="${td}">${(r.cogs > 0 && r.dio != null) ? r.dio + ' hari' : '—'}</td>
-    </tr>`;
-  }).join('');
-  return `
-    <div class="cc" style="margin-top:14px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px;">
-        <div class="ct" style="margin-bottom:0;">Monitoring per Segmen — ${period}</div>
-        ${controls}
-      </div>
-      ${rows.length ? `
-      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;">
-        <table style="width:100%;border-collapse:collapse;">
-          <thead><tr>
-            <th style="${thL}">Segmen</th><th style="${th}${metric === 'cogs' ? hl : ''}">COGS${metric === 'cogs' ? ' ▼' : ''}</th>
-            <th style="${th}${metric === 'nominal' ? hl : ''}">Inventory Akhir${metric === 'nominal' ? ' ▼' : ''}</th>
-            <th style="${th}${metric === 'ito' ? hl : ''}">ITO${metric === 'ito' ? ' ▼' : ''}</th><th style="${th}">DIO</th>
-          </tr></thead>
-          <tbody>${body}</tbody>
-          <tfoot><tr style="background:rgba(255,255,255,.04);font-weight:700;">
-            <td style="${tdL};color:var(--accent);">TOTAL</td>
-            <td style="${td}">${fmtRpFull(totCogs)}</td>
-            <td style="${td}">${fmtRpFull(totInv)}</td>
-            <td style="${td}">${badge(totIto)}</td>
-            <td style="${td}">${totDio != null ? totDio + ' hari' : '—'}</td>
-          </tr></tfoot>
-        </table>
-      </div>` : `<div style="padding:18px;text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;">Tidak ada data segmen untuk filter ini.</div>`}
-    </div>`;
-}
-
 /* ── Monitoring per store (menggantikan tabel Distribusi OH Store & OD Store) ──
    Level store (OH + OD store saja). Periode = bulan yang dipilih di filter atas.
    Pilihan tampil: urut berdasarkan ITO atau Nominal Inventory; filter segmen lokal (Tigalapan, Mamu, DLL, Reject). */
@@ -9325,17 +9271,59 @@ function it3StoreMon(R) {
 function itSetStoreMetric(m) { window._itStoreMetric = m; itRender(); }
 function itSetStoreSeg(sg) { window._itStoreSeg = sg || null; itRender(); }
 
-function itStoreMonitorHtml(R, rows) {
-  const metric = window._itStoreMetric || 'ito', segF = window._itStoreSeg || null, n = R.bl.length;
-  rows.sort((a, b) => metric === 'ito' ? ((b.ito == null ? -1 : b.ito) - (a.ito == null ? -1 : a.ito)) : (b.inv - a.inv));
-  const totInv = rows.reduce((s, r) => s + r.inv, 0), totCogs = rows.reduce((s, r) => s + r.cogs, 0), totAvg = rows.reduce((s, r) => s + r.avg, 0);
+/* ── Menu "Kolom": kolom tambahan yang disembunyikan secara default ── */
+const IT_COL_DEF = {
+  bulan:  [['awal', 'Inventory Awal'], ['rata', 'Rata-rata Inventory']],
+  store:  [['pinv', '% Inventory'], ['pcogs', '% COGS'], ['rata', 'Rata-rata Inventory']],
+  segmen: [['pinv', '% Inventory'], ['pcogs', '% COGS'], ['rata', 'Rata-rata Inventory']]
+};
+window._itCols = window._itCols || { bulan: {}, store: {}, segmen: {} };
+function itColOn(t, k) { return !!(window._itCols[t] && window._itCols[t][k]); }
+function itColMenuHtml(t) {
+  return `<div style="position:relative;">
+      <button onclick="itToggleColMenu('${t}',event)" style="display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:10px;padding:6px 12px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;cursor:pointer;"><i class="ti ti-columns" style="font-size:13px;"></i>Kolom</button>
+      <div class="it-colmenu" id="it-colmenu-${t}" style="display:none;position:absolute;right:0;top:36px;z-index:30;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.45);">
+        ${IT_COL_DEF[t].map(([k, l]) => `<label class="cb-item"><input type="checkbox" ${itColOn(t, k) ? 'checked' : ''} onchange="itToggleCol('${t}','${k}',this.checked)"> ${l}</label>`).join('')}
+      </div></div>`;
+}
+function itToggleColMenu(t, e) {
+  e.stopPropagation();
+  const m = document.getElementById('it-colmenu-' + t), open = m.style.display === 'block';
+  document.querySelectorAll('.it-colmenu').forEach(x => { x.style.display = 'none'; });
+  m.style.display = open ? 'none' : 'block';
+}
+function itToggleCol(t, k, v) {
+  window._itCols[t][k] = v;
+  itRender();
+  const m = document.getElementById('it-colmenu-' + t);
+  if (m) m.style.display = 'block';
+}
+document.addEventListener('click', e => { if (!e.target.closest('.it-colmenu')) document.querySelectorAll('.it-colmenu').forEach(x => { x.style.display = 'none'; }); });
+
+function itGrp(items, cur, fn) {
+  return `<div style="display:flex;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:2px;flex-wrap:wrap;">` +
+    items.map(o => `<button onclick="${fn}(${o.v === null ? 'null' : "'" + o.v + "'"})" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border:none;border-radius:6px;cursor:pointer;background:${cur === o.v ? 'var(--accent)' : 'transparent'};color:${cur === o.v ? '#0d0d0f' : 'var(--muted)'};font-weight:${cur === o.v ? '700' : '400'};">${o.l}</button>`).join('') + '</div>';
+}
+function itBrandBtns(cur, fn) {
+  const items = [{ v: null, l: 'SEMUA' }].concat(it3.all.seg.filter(s => s !== 'BELUM DIPETAKAN').map(s => ({ v: s, l: IT_SEG_LABEL[s] || s })));
+  return `<div style="display:flex;gap:6px;align-items:center;"><span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Brand:</span>${itGrp(items, cur, fn)}</div>`;
+}
+
+/* ── Tabel monitoring bersama (Per Store & Per Brand): urut dengan klik judul kolom ── */
+function itMonHtml(c) {
+  const tab = c.tab, metric = c.metric, n = c.n;
+  const rows = c.rows.slice().sort((a, b) => metric === 'ito' ? ((b.ito == null ? -1 : b.ito) - (a.ito == null ? -1 : a.ito)) : metric === 'cogs' ? (b.cogs - a.cogs) : (b.inv - a.inv));
+  const sum = f => rows.reduce((s, r) => s + f(r), 0);
+  const totInv = sum(r => r.inv), totCogs = sum(r => r.cogs), totAvg = sum(r => r.avg);
   const totIto = totAvg > 0 ? totCogs / totAvg : null;
   const totDio = (totIto && totIto > 0) ? Math.round(30 * n / totIto * 10) / 10 : null;
-  const maxIto = Math.max(0.0001, ...rows.map(r => r.ito || 0)), maxInv = Math.max(1, ...rows.map(r => r.inv));
-  const th  = 'position:sticky;top:0;background:var(--surface);padding:8px 12px;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:400;border-bottom:1px solid var(--border);white-space:nowrap;text-align:right;';
+  const maxIto = Math.max(0.0001, ...rows.map(r => r.ito || 0)), maxInv = Math.max(1, ...rows.map(r => r.inv)), maxCogs = Math.max(1, ...rows.map(r => r.cogs));
+  const cPI = itColOn(tab, 'pinv'), cPC = itColOn(tab, 'pcogs'), cAv = itColOn(tab, 'rata');
+  const th  = 'position:sticky;top:0;background:var(--surface);padding:8px 12px;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:400;border-bottom:1px solid var(--border);white-space:nowrap;text-align:right;z-index:1;';
   const thL = th + 'text-align:left;';
   const td  = 'padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;font-family:var(--font-mono);text-align:right;position:relative;';
   const tdL = td + 'text-align:left;font-weight:600;';
+  const tdM = td + 'color:var(--muted);font-size:10px;';
   const hl  = 'color:var(--accent);';
   const badge = t => {
     if (t == null) return '<span style="color:var(--muted)">—</span>';
@@ -9343,52 +9331,60 @@ function itStoreMonitorHtml(R, rows) {
     const bg  = t >= 4 ? 'rgba(74,222,128,.15)' : t >= 2 ? 'rgba(234,179,8,.15)' : 'rgba(248,113,113,.15)';
     return `<span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${clr};background:${bg};padding:2px 8px;border-radius:6px;">${t.toFixed(3)}×</span>`;
   };
-  const bar = (pct, color) => `<div style="position:absolute;left:0;top:3px;bottom:3px;width:${Math.max(0, Math.min(100, pct)).toFixed(1)}%;background:${color};opacity:.16;border-radius:0 4px 4px 0;pointer-events:none;"></div>`;
-  const grp = (items, cur, fn) => `<div style="display:flex;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:2px;flex-wrap:wrap;">` +
-    items.map(o => `<button onclick="${fn}(${o.v === null ? 'null' : "'" + o.v + "'"})" style="font-family:var(--font-mono);font-size:10px;padding:5px 12px;border:none;border-radius:6px;cursor:pointer;background:${cur === o.v ? 'var(--accent)' : 'transparent'};color:${cur === o.v ? '#0d0d0f' : 'var(--muted)'};font-weight:${cur === o.v ? '700' : '400'};">${o.l}</button>`).join('') + '</div>';
-  const lbl = t => `<span style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">${t}</span>`;
-  const controls = `
-    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
-      <div style="display:flex;gap:6px;align-items:center;">${lbl('Tampilkan:')}${grp([{v:'ito', l:'ITO'}, {v:'nominal', l:'Nominal Inventory'}], metric, 'itSetStoreMetric')}</div>
-      <div style="display:flex;gap:6px;align-items:center;">${lbl('Segmen:')}${grp([{v:null, l:'Semua'}].concat(it3.all.seg.map(s => ({v:s, l:IT_SEG_LABEL[s] || s}))), segF, 'itSetStoreSeg')}</div>
-    </div>`;
-  const body = rows.map((r, i) => {
-    const pct = totInv > 0 ? (r.inv / totInv * 100).toFixed(1) : '0.0';
-    return `<tr style="${i % 2 ? 'background:rgba(255,255,255,.02);' : ''}">
-      <td style="${tdL}">${r.s}${r.tutup ? ' <span style="font-weight:400;font-size:9px;color:var(--muted);">(tanpa stok bln terakhir)</span>' : ''}</td>
-      <td style="${td}${metric === 'nominal' ? hl : ''}">${metric === 'nominal' ? bar(r.inv / maxInv * 100, 'var(--accent)') : ''}${fmtRpFull(r.inv)}</td>
-      <td style="${td}">${fmtRpFull(r.cogs)}</td>
-      <td style="${td}">${metric === 'ito' ? bar((r.ito || 0) / maxIto * 100, '#47c8ff') : ''}${r.cogs > 0 ? badge(r.ito) : '<span style="color:var(--muted);font-size:10px;">—</span>'}</td>
+  const pct = (v, t) => t > 0 ? (v / t * 100).toFixed(1) + '%' : '—';
+  const bar = (p, color) => `<div style="position:absolute;left:0;top:3px;bottom:3px;width:${Math.max(0, Math.min(100, p)).toFixed(1)}%;background:${color};opacity:.16;border-radius:0 4px 4px 0;pointer-events:none;"></div>`;
+  const sth = (key, label) => `<th onclick="${c.setFn}('${key}')" style="${th}cursor:pointer;${metric === key ? hl : ''}">${label}${metric === key ? ' ▼' : ''}</th>`;
+  const body = rows.map((r, i) => `<tr style="${i % 2 ? 'background:rgba(255,255,255,.02);' : ''}">
+      <td style="${tdL}">${r.nameHtml}</td>
+      <td style="${td}${metric === 'nominal' ? hl : ''}">${metric === 'nominal' ? bar(r.inv / maxInv * 100, r.color) : ''}${fmtRpFull(r.inv)}</td>
+      ${cPI ? `<td style="${tdM}">${pct(r.inv, totInv)}</td>` : ''}
+      <td style="${td}${metric === 'cogs' ? hl : ''}">${metric === 'cogs' ? bar(r.cogs / maxCogs * 100, r.color) : ''}${fmtRpFull(r.cogs)}</td>
+      ${cPC ? `<td style="${tdM}">${pct(r.cogs, totCogs)}</td>` : ''}
+      ${cAv ? `<td style="${td}">${fmtRpFull(r.avg)}</td>` : ''}
+      <td style="${td}">${metric === 'ito' ? bar((r.ito || 0) / maxIto * 100, r.color) : ''}${r.cogs > 0 ? badge(r.ito) : '<span style="color:var(--muted);font-size:10px;">—</span>'}</td>
       <td style="${td}">${(r.cogs > 0 && r.dio != null) ? r.dio + ' hari' : '—'}</td>
-    </tr>`;
-  }).join('');
-  const period = n > 1 ? `${R.first} – ${R.last} (${n} bulan)` : R.first;
-  const basisTxt = (window._it3Basis || 'rata') === 'rata' ? 'Rata-rata (awal+akhir)' : 'Akhir bulan';
+    </tr>`).join('');
+  const period = n > 1 ? `${c.first} – ${c.last} (${n} bulan)` : c.first;
   return `
     <div class="cc" style="margin-top:14px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px;">
-        <div class="ct" style="margin-bottom:0;">Monitoring per Store — ${period}</div>
-        ${controls}
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:10px;">
+        <div class="ct" style="margin-bottom:0;">${c.title} — ${period}</div>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">${c.controls}${itColMenuHtml(tab)}</div>
       </div>
       ${rows.length ? `
-      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;max-height:460px;overflow-y:auto;">
+      <div style="overflow:auto;max-height:460px;border:1px solid var(--border);border-radius:8px;">
         <table style="width:100%;border-collapse:collapse;">
           <thead><tr>
-            <th style="${thL}">Store</th>
-            <th style="${th}${metric === 'nominal' ? hl : ''}">Inventory Akhir${metric === 'nominal' ? ' ▼' : ''}</th>
-            <th style="${th}">COGS</th>
-            <th style="${th}${metric === 'ito' ? hl : ''}">ITO${metric === 'ito' ? ' ▼' : ''}</th><th style="${th}">DIO</th>
+            <th style="${thL}">${c.nameHead}</th>
+            ${sth('nominal', 'Inventory Akhir')}${cPI ? `<th style="${th}">% Inventory</th>` : ''}
+            ${sth('cogs', 'COGS')}${cPC ? `<th style="${th}">% COGS</th>` : ''}
+            ${cAv ? `<th style="${th}">Rata-rata Inventory</th>` : ''}
+            ${sth('ito', 'ITO')}<th style="${th}">DIO</th>
           </tr></thead>
           <tbody>${body}</tbody>
           <tfoot><tr style="background:rgba(255,255,255,.04);font-weight:700;">
             <td style="${tdL};color:var(--accent);">TOTAL</td>
-            <td style="${td}">${fmtRpFull(totInv)}</td>
-            <td style="${td}">${fmtRpFull(totCogs)}</td><td style="${td}">${badge(totIto)}</td>
+            <td style="${td}">${fmtRpFull(totInv)}</td>${cPI ? `<td style="${td}"></td>` : ''}
+            <td style="${td}">${fmtRpFull(totCogs)}</td>${cPC ? `<td style="${td}"></td>` : ''}
+            ${cAv ? `<td style="${td}">${fmtRpFull(totAvg)}</td>` : ''}
+            <td style="${td}">${badge(totIto)}</td>
             <td style="${td}">${totDio != null ? totDio + ' hari' : '—'}</td>
           </tr></tfoot>
         </table>
-      </div>` : `<div style="padding:18px;text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;">Tidak ada data store untuk filter ini.</div>`}
+      </div>` : `<div style="padding:18px;text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;">${c.emptyMsg}</div>`}
     </div>`;
+}
+function itStoreMonitorHtml(R, rows) {
+  const rr = rows.map(r => ({ nameHtml: itEsc(r.s) + (r.tutup ? ' <span style="font-weight:400;font-size:9px;color:var(--muted);">(tanpa stok bln terakhir)</span>' : ''),
+    cogs: r.cogs, inv: r.inv, avg: r.avg, ito: r.ito, dio: r.dio, color: '#47c8ff' }));
+  return itMonHtml({ tab: 'store', title: 'Monitoring per Store', nameHead: 'Store', rows: rr, metric: window._itStoreMetric || 'ito', setFn: 'itSetStoreMetric',
+    n: R.bl.length, first: R.first, last: R.last, controls: itBrandBtns(window._itStoreSeg || null, 'itSetStoreSeg'), emptyMsg: 'Tidak ada data store untuk filter ini.' });
+}
+function itSegMonitorHtml(R, rows) {
+  const rr = rows.map(r => ({ nameHtml: `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;background:${IT_SEG_COLOR[r.sg] || '#888'};"></span>${IT_SEG_LABEL[r.sg] || r.sg}`,
+    cogs: r.cogs, inv: r.inv, avg: r.avg, ito: r.ito, dio: r.dio, color: IT_SEG_COLOR[r.sg] || '#888' }));
+  return itMonHtml({ tab: 'segmen', title: 'Monitoring per Brand', nameHead: 'Brand', rows: rr, metric: window._itSegMetric || 'nominal', setFn: 'itSetSegMetric',
+    n: R.bl.length, first: R.first, last: R.last, controls: itBrandBtns(window._itSegSeg || null, 'itSetSegSeg'), emptyMsg: 'Tidak ada data brand untuk filter ini.' });
 }
 
 /* ── Tab halaman Inventory Turnover: Total Inventory | Per Store | Per Segmen ── */
