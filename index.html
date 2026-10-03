@@ -8953,7 +8953,7 @@ function itRender() {
     const lvlTot = R.total && window._itTab !== 'store';
     badge.style.color = lvlTot ? 'var(--accent)' : 'var(--accent3)';
     badge.style.borderColor = lvlTot ? 'rgba(232,255,71,.4)' : 'rgba(71,200,255,.4)';
-    badge.textContent = lvlTot ? 'Level TOTAL · incl. DC, WIP, OD ke DC' : 'Level STORE · OH + OD store saja';
+    badge.textContent = lvlTot ? 'OH DC, WIP, OD DC, OD STORE, OH STORE' : 'OH STORE + OD STORE';
   }
   const empty = !nBulan || !bl.some(b => R.mon[b].cogs || R.mon[b].akhir);
   if (empty) {
