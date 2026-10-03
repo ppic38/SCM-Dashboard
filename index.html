@@ -9468,7 +9468,8 @@ function it3WarnaParse(rows) {
     const s = String(g(r, 'Store')).trim().toUpperCase();
     W.push({ b, s, st: outlets.has(s), g: String(g(r, 'Segmen')).trim().toUpperCase(), k: String(g(r, 'Kategori')).trim().toUpperCase(),
              w: String(g(r, 'Warna')).trim().toUpperCase(), cogs: itNum(g(r, 'COGS')), oh: itNum(g(r, 'OH Value')), od: itNum(g(r, 'OD Value')),
-             akhir: itNum(g(r, 'Inventory Akhir')), awal: itNum(g(r, 'Inventory Awal')) });
+             akhir: itNum(g(r, 'Inventory Akhir')), awal: itNum(g(r, 'Inventory Awal')),
+             ohq: itNum(g(r, 'OH Qty')), odq: itNum(g(r, 'OD Qty')), nsq: itNum(g(r, 'WIP / OD ke DC Qty')) });
   });
   return W.length ? W : null;
 }
@@ -9481,13 +9482,13 @@ function it3WarnaMon(R, ctx) {
   const per = {};
   it3.warna.forEach(x => {
     if (!bl.has(x.b) || !act(x.k)) return;
-    let inv;
-    if (useTotal) inv = x.akhir;
-    else { if (!x.st || !(stF ? x.s === stF : sel.outlet.has(x.s))) return; inv = x.oh + x.od; }
+    let inv, qty;
+    if (useTotal) { inv = x.akhir; qty = x.ohq + x.odq + x.nsq; }
+    else { if (!x.st || !(stF ? x.s === stF : sel.outlet.has(x.s))) return; inv = x.oh + x.od; qty = x.ohq + x.odq; }
     const key = x.k + '\u0001' + x.w;
     const o = (per[key] = per[key] || { k: x.k, w: x.w, g: x.g, m: {} });
-    const z = (o.m[x.b] = o.m[x.b] || { cogs: 0, akhir: 0, awal: 0 });
-    z.cogs += x.cogs; z.akhir += inv; z.awal += x.awal;
+    const z = (o.m[x.b] = o.m[x.b] || { cogs: 0, akhir: 0, awal: 0, qty: 0 });
+    z.cogs += x.cogs; z.akhir += inv; z.awal += x.awal; z.qty += qty;
   });
   const basis = window._it3Basis || 'rata', n = R.bl.length, rows = [];
   Object.keys(per).forEach(key => {
@@ -9501,9 +9502,10 @@ function it3WarnaMon(R, ctx) {
     } else {
       avg = ((m[R.first] ? m[R.first].akhir : 0) + inv) / 2;
     }
-    if (!cogs && !inv && !avg) return;
+    const qty = m[R.last] ? m[R.last].qty : 0;
+    if (!cogs && !inv && !avg && !qty) return;
     const ito = (avg > 0 && inv > 0) ? cogs / avg : null;
-    rows.push({ k: o.k, w: o.w, g: o.g, cogs, inv, avg, ito, dio: (ito && ito > 0) ? Math.round(30 * n / ito * 10) / 10 : null });
+    rows.push({ k: o.k, w: o.w, g: o.g, cogs, inv, qty, avg, ito, dio: (ito && ito > 0) ? Math.round(30 * n / ito * 10) / 10 : null });
   });
   return { rows, useTotal };
 }
@@ -9520,13 +9522,13 @@ function itWarnaTable(R, ctx) {
   const all = view === 'semua' ? rows : rows.filter(r => r.g === view);   /* Tigalapan per warna; Mamu / DLL / Reject tidak punya warna -> kolom Warna kosong, tampil per kategori */
   const q = itWarnaQuery();
   const shown = q.length ? all.filter(r => { const t = r.w + ' ' + r.k; return q.every(w => t.includes(w)); }) : all;
-  shown.sort((a, b) => metric === 'ito' ? ((b.ito == null ? -1 : b.ito) - (a.ito == null ? -1 : a.ito)) : metric === 'cogs' ? (b.cogs - a.cogs) : (b.inv - a.inv));
+  shown.sort((a, b) => metric === 'ito' ? ((b.ito == null ? -1 : b.ito) - (a.ito == null ? -1 : a.ito)) : metric === 'cogs' ? (b.cogs - a.cogs) : metric === 'qty' ? (b.qty - a.qty) : (b.inv - a.inv));
   const sum = (arr, f) => arr.reduce((s, r) => s + f(r), 0);
   const allCogs = sum(all, r => r.cogs), allInv = sum(all, r => r.inv);
-  const totCogs = sum(shown, r => r.cogs), totInv = sum(shown, r => r.inv), totAvg = sum(shown, r => r.avg);
+  const totQty = sum(shown, r => r.qty), totCogs = sum(shown, r => r.cogs), totInv = sum(shown, r => r.inv), totAvg = sum(shown, r => r.avg);
   const totIto = totAvg > 0 ? totCogs / totAvg : null;
   const totDio = (totIto && totIto > 0) ? Math.round(30 * n / totIto * 10) / 10 : null;
-  const maxIto = Math.max(0.0001, ...shown.map(r => r.ito || 0)), maxInv = Math.max(1, ...shown.map(r => r.inv)), maxCogs = Math.max(1, ...shown.map(r => r.cogs));
+  const maxIto = Math.max(0.0001, ...shown.map(r => r.ito || 0)), maxInv = Math.max(1, ...shown.map(r => r.inv)), maxCogs = Math.max(1, ...shown.map(r => r.cogs)), maxQty = Math.max(1, ...shown.map(r => r.qty));
   const th  = 'position:sticky;top:0;background:var(--surface);padding:8px 12px;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:400;border-bottom:1px solid var(--border);white-space:nowrap;text-align:right;z-index:1;';
   const thL = th + 'text-align:left;';
   const td  = 'padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;font-family:var(--font-mono);text-align:right;position:relative;';
@@ -9549,6 +9551,7 @@ function itWarnaTable(R, ctx) {
       <td style="${td};text-align:left;color:var(--muted);font-size:10px;">${itEsc(r.k)}</td>` : `<td style="${tdL}">${itEsc(r.k)}</td>`}
       <td style="${td}${metric === 'cogs' ? hl : ''}">${metric === 'cogs' ? bar(r.cogs / maxCogs * 100, c) : ''}${fmtRpFull(r.cogs)}</td>
       <td style="${td}${metric === 'nominal' ? hl : ''}">${metric === 'nominal' ? bar(r.inv / maxInv * 100, c) : ''}${fmtRpFull(r.inv)}</td>
+      <td style="${td}${metric === 'qty' ? hl : ''}">${metric === 'qty' ? bar(r.qty / maxQty * 100, c) : ''}${itFmtQty(r.qty)}</td>
       <td style="${td}">${metric === 'ito' ? bar((r.ito || 0) / maxIto * 100, c) : ''}${r.cogs > 0 ? badge(r.ito) : '<span style="color:var(--muted);font-size:10px;">—</span>'}</td>
       <td style="${td}">${(r.cogs > 0 && r.dio != null) ? r.dio + ' hari' : '—'}</td>
     </tr>`).join('');
@@ -9561,14 +9564,14 @@ function itWarnaTable(R, ctx) {
           <thead><tr>
             ${showW ? `<th style="${thL}">Warna</th>` : ''}<th style="${thL}">Kategori</th>
             <th onclick="itSetWarnaMetric('cogs')" style="${th}cursor:pointer;${metric === 'cogs' ? hl : ''}">COGS${metric === 'cogs' ? ' ▼' : ''}</th>
-            <th onclick="itSetWarnaMetric('nominal')" style="${th}cursor:pointer;${metric === 'nominal' ? hl : ''}">Inventory Akhir${metric === 'nominal' ? ' ▼' : ''}</th>
+            <th onclick="itSetWarnaMetric('nominal')" style="${th}cursor:pointer;${metric === 'nominal' ? hl : ''}">Inventory Akhir${metric === 'nominal' ? ' ▼' : ''}</th><th onclick="itSetWarnaMetric('qty')" style="${th}cursor:pointer;${metric === 'qty' ? hl : ''}">Stok (Qty)${metric === 'qty' ? ' ▼' : ''}</th>
             <th onclick="itSetWarnaMetric('ito')" style="${th}cursor:pointer;${metric === 'ito' ? hl : ''}">ITO${metric === 'ito' ? ' ▼' : ''}</th><th style="${th}">DIO</th>
           </tr></thead>
           <tbody>${body}</tbody>
           <tfoot><tr style="background:rgba(255,255,255,.04);font-weight:700;">
             <td style="${tdL};color:var(--accent);">TOTAL${q.length ? ' (hasil cari)' : ''}</td>${showW ? `<td style="${td}"></td>` : ''}
             <td style="${td}">${fmtRpFull(totCogs)}</td>
-            <td style="${td}">${fmtRpFull(totInv)}</td>
+            <td style="${td}">${fmtRpFull(totInv)}</td><td style="${td}">${itFmtQty(totQty)}</td>
             <td style="${td}">${badge(totIto)}</td>
             <td style="${td}">${totDio != null ? totDio + ' hari' : '—'}</td>
           </tr></tfoot>
