@@ -9271,6 +9271,33 @@ function it3StoreMon(R) {
 function itSetStoreMetric(m) { window._itStoreMetric = m; itRender(); }
 function itSetStoreSeg(sg) { window._itStoreSeg = sg || null; itRender(); }
 
+/* ── Sort header tabel: klik 1x tertinggi→terendah (▼), 2x terendah→tertinggi (▲), 3x mati (urut nama) ── */
+const IT_SORT_DEF = { warna: 'nominal', store: 'ito', segmen: 'nominal' };
+window._itSort = window._itSort || {};
+function itSortGet(t) { const s = window._itSort[t]; return s === undefined ? { key: IT_SORT_DEF[t], dir: 'desc' } : s; }
+function itSortClick(t, k) {
+  const s = itSortGet(t);
+  window._itSort[t] = (!s || s.key !== k) ? { key: k, dir: 'desc' } : (s.dir === 'desc' ? { key: k, dir: 'asc' } : null);
+  if (t === 'warna') itWarnaRefresh(); else itRender();
+}
+function itSortRows(rows, s, nameOf) {
+  const arr = rows.slice();
+  if (!s) { arr.sort((a, b) => nameOf(a).localeCompare(nameOf(b))); return arr; }
+  const val = { nominal: r => r.inv, cogs: r => r.cogs, qty: r => r.qty, ito: r => r.ito, dio: r => r.dio }[s.key], m = s.dir === 'asc' ? 1 : -1;
+  arr.sort((a, b) => {
+    const x = val(a), y = val(b);
+    if (x == null && y == null) return 0;
+    if (x == null) return 1;
+    if (y == null) return -1;
+    return (x - y) * m;
+  });
+  return arr;
+}
+function itSortTh(t, k, label, s, st) {
+  const on = s && s.key === k;
+  return `<th onclick="itSortClick('${t}','${k}')" style="${st}cursor:pointer;user-select:none;${on ? 'color:var(--accent);' : ''}">${label}${on ? (s.dir === 'desc' ? ' ▼' : ' ▲') : ' <span style="opacity:.35">↕</span>'}</th>`;
+}
+
 /* ── Menu "Kolom": kolom tambahan yang disembunyikan secara default ── */
 const IT_COL_DEF = {
   bulan:  [['awal', 'Inventory Awal'], ['rata', 'Rata-rata Inventory']],
@@ -9311,8 +9338,8 @@ function itBrandBtns(cur, fn) {
 
 /* ── Tabel monitoring bersama (Per Store & Per Brand): urut dengan klik judul kolom ── */
 function itMonHtml(c) {
-  const tab = c.tab, metric = c.metric, n = c.n;
-  const rows = c.rows.slice().sort((a, b) => metric === 'ito' ? ((b.ito == null ? -1 : b.ito) - (a.ito == null ? -1 : a.ito)) : metric === 'cogs' ? (b.cogs - a.cogs) : (b.inv - a.inv));
+  const tab = c.tab, n = c.n, sortS = itSortGet(tab), metric = sortS ? sortS.key : null;
+  const rows = itSortRows(c.rows, sortS, r => r.name);
   const sum = f => rows.reduce((s, r) => s + f(r), 0);
   const totInv = sum(r => r.inv), totCogs = sum(r => r.cogs), totAvg = sum(r => r.avg);
   const totIto = totAvg > 0 ? totCogs / totAvg : null;
@@ -9333,7 +9360,7 @@ function itMonHtml(c) {
   };
   const pct = (v, t) => t > 0 ? (v / t * 100).toFixed(1) + '%' : '—';
   const bar = (p, color) => `<div style="position:absolute;left:0;top:3px;bottom:3px;width:${Math.max(0, Math.min(100, p)).toFixed(1)}%;background:${color};opacity:.16;border-radius:0 4px 4px 0;pointer-events:none;"></div>`;
-  const sth = (key, label) => `<th onclick="${c.setFn}('${key}')" style="${th}cursor:pointer;${metric === key ? hl : ''}">${label}${metric === key ? ' ▼' : ''}</th>`;
+  const sth = (key, label) => itSortTh(tab, key, label, sortS, th);
   const body = rows.map((r, i) => `<tr style="${i % 2 ? 'background:rgba(255,255,255,.02);' : ''}">
       <td style="${tdL}">${r.nameHtml}</td>
       <td style="${td}${metric === 'nominal' ? hl : ''}">${metric === 'nominal' ? bar(r.inv / maxInv * 100, r.color) : ''}${fmtRpFull(r.inv)}</td>
@@ -9359,7 +9386,7 @@ function itMonHtml(c) {
             ${sth('nominal', 'Inventory Akhir')}${cPI ? `<th style="${th}">% Inventory</th>` : ''}
             ${sth('cogs', 'COGS')}${cPC ? `<th style="${th}">% COGS</th>` : ''}
             ${cAv ? `<th style="${th}">Rata-rata Inventory</th>` : ''}
-            ${sth('ito', 'ITO')}<th style="${th}">DIO</th>
+            ${sth('ito', 'ITO')}${sth('dio', 'DIO')}
           </tr></thead>
           <tbody>${body}</tbody>
           <tfoot><tr style="background:rgba(255,255,255,.04);font-weight:700;">
@@ -9375,15 +9402,15 @@ function itMonHtml(c) {
     </div>`;
 }
 function itStoreMonitorHtml(R, rows) {
-  const rr = rows.map(r => ({ nameHtml: itEsc(r.s) + (r.tutup ? ' <span style="font-weight:400;font-size:9px;color:var(--muted);">(tanpa stok bln terakhir)</span>' : ''),
+  const rr = rows.map(r => ({ name: r.s, nameHtml: itEsc(r.s) + (r.tutup ? ' <span style="font-weight:400;font-size:9px;color:var(--muted);">(tanpa stok bln terakhir)</span>' : ''),
     cogs: r.cogs, inv: r.inv, avg: r.avg, ito: r.ito, dio: r.dio, color: '#47c8ff' }));
-  return itMonHtml({ tab: 'store', title: 'Monitoring per Store', nameHead: 'Store', rows: rr, metric: window._itStoreMetric || 'ito', setFn: 'itSetStoreMetric',
+  return itMonHtml({ tab: 'store', title: 'Monitoring per Store', nameHead: 'Store', rows: rr, 
     n: R.bl.length, first: R.first, last: R.last, controls: itBrandBtns(window._itStoreSeg || null, 'itSetStoreSeg'), emptyMsg: 'Tidak ada data store untuk filter ini.' });
 }
 function itSegMonitorHtml(R, rows) {
-  const rr = rows.map(r => ({ nameHtml: `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;background:${IT_SEG_COLOR[r.sg] || '#888'};"></span>${IT_SEG_LABEL[r.sg] || r.sg}`,
+  const rr = rows.map(r => ({ name: IT_SEG_LABEL[r.sg] || r.sg, nameHtml: `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;background:${IT_SEG_COLOR[r.sg] || '#888'};"></span>${IT_SEG_LABEL[r.sg] || r.sg}`,
     cogs: r.cogs, inv: r.inv, avg: r.avg, ito: r.ito, dio: r.dio, color: IT_SEG_COLOR[r.sg] || '#888' }));
-  return itMonHtml({ tab: 'segmen', title: 'Monitoring per Brand', nameHead: 'Brand', rows: rr, metric: window._itSegMetric || 'nominal', setFn: 'itSetSegMetric',
+  return itMonHtml({ tab: 'segmen', title: 'Monitoring per Brand', nameHead: 'Brand', rows: rr, 
     n: R.bl.length, first: R.first, last: R.last, controls: itBrandBtns(window._itSegSeg || null, 'itSetSegSeg'), emptyMsg: 'Tidak ada data brand untuk filter ini.' });
 }
 
@@ -9515,14 +9542,14 @@ function itSetWarnaMetric(m) { window._itWarnaMetric = m; itRender(); }
 function itWarnaQuery() { return String(window._itWarnaQ || '').trim().toUpperCase().split(/\s+/).filter(Boolean); }
 function itWarnaTable(R, ctx) {
   const { rows, useTotal } = it3WarnaMon(R, ctx), n = R.bl.length;
-  const metric = window._itWarnaMetric || 'nominal';
+  const sortS = itSortGet('warna'), metric = sortS ? sortS.key : null;
   const stF = ctx === 'segmen' ? (window._itSegStore || null) : null;
   const view = window._itWarnaView || 'semua';
   const showW = view === 'semua' || view === 'TIGALAPAN';   /* Mamu / DLL / Reject tidak punya warna -> kolom Warna disembunyikan */
   const all = view === 'semua' ? rows : rows.filter(r => r.g === view);   /* Tigalapan per warna; Mamu / DLL / Reject tidak punya warna -> kolom Warna kosong, tampil per kategori */
   const q = itWarnaQuery();
   const shown = q.length ? all.filter(r => { const t = r.w + ' ' + r.k; return q.every(w => t.includes(w)); }) : all;
-  shown.sort((a, b) => metric === 'ito' ? ((b.ito == null ? -1 : b.ito) - (a.ito == null ? -1 : a.ito)) : metric === 'cogs' ? (b.cogs - a.cogs) : metric === 'qty' ? (b.qty - a.qty) : (b.inv - a.inv));
+  const sorted = itSortRows(shown, sortS, r => r.w + ' ' + r.k);
   const sum = (arr, f) => arr.reduce((s, r) => s + f(r), 0);
   const allCogs = sum(all, r => r.cogs), allInv = sum(all, r => r.inv);
   const totQty = sum(shown, r => r.qty), totCogs = sum(shown, r => r.cogs), totInv = sum(shown, r => r.inv), totAvg = sum(shown, r => r.avg);
@@ -9546,7 +9573,7 @@ function itWarnaTable(R, ctx) {
   const period = n > 1 ? `${R.first} – ${R.last} (${n} bulan)` : R.first;
   const basisTxt = (window._it3Basis || 'rata') === 'rata' ? 'Rata-rata (awal+akhir)' : 'Akhir bulan';
   const levelTxt = useTotal ? 'Level TOTAL (incl. DC, WIP, OD ke DC)' : 'Level STORE (OH + OD store saja' + (stF ? ' · ' + stF : '') + ')';
-  const body = shown.map((r, i) => `<tr style="${i % 2 ? 'background:rgba(255,255,255,.02);' : ''}">
+  const body = sorted.map((r, i) => `<tr style="${i % 2 ? 'background:rgba(255,255,255,.02);' : ''}">
       ${showW ? `<td style="${tdL}">${r.g === 'TIGALAPAN' ? itEsc(r.w) : '<span style="color:var(--muted);font-weight:400;">—</span>'}</td>
       <td style="${td};text-align:left;color:var(--muted);font-size:10px;">${itEsc(r.k)}</td>` : `<td style="${tdL}">${itEsc(r.k)}</td>`}
       <td style="${td}${metric === 'cogs' ? hl : ''}">${metric === 'cogs' ? bar(r.cogs / maxCogs * 100, c) : ''}${fmtRpFull(r.cogs)}</td>
@@ -9563,9 +9590,8 @@ function itWarnaTable(R, ctx) {
         <table style="width:100%;border-collapse:collapse;">
           <thead><tr>
             ${showW ? `<th style="${thL}">Warna</th>` : ''}<th style="${thL}">Kategori</th>
-            <th onclick="itSetWarnaMetric('cogs')" style="${th}cursor:pointer;${metric === 'cogs' ? hl : ''}">COGS${metric === 'cogs' ? ' ▼' : ''}</th>
-            <th onclick="itSetWarnaMetric('nominal')" style="${th}cursor:pointer;${metric === 'nominal' ? hl : ''}">Inventory Akhir${metric === 'nominal' ? ' ▼' : ''}</th><th onclick="itSetWarnaMetric('qty')" style="${th}cursor:pointer;${metric === 'qty' ? hl : ''}">Stok (Qty)${metric === 'qty' ? ' ▼' : ''}</th>
-            <th onclick="itSetWarnaMetric('ito')" style="${th}cursor:pointer;${metric === 'ito' ? hl : ''}">ITO${metric === 'ito' ? ' ▼' : ''}</th><th style="${th}">DIO</th>
+            ${itSortTh('warna', 'cogs', 'COGS', sortS, th)}${itSortTh('warna', 'nominal', 'Inventory Akhir', sortS, th)}${itSortTh('warna', 'qty', 'Stok (Qty)', sortS, th)}
+            ${itSortTh('warna', 'ito', 'ITO', sortS, th)}${itSortTh('warna', 'dio', 'DIO', sortS, th)}
           </tr></thead>
           <tbody>${body}</tbody>
           <tfoot><tr style="background:rgba(255,255,255,.04);font-weight:700;">
@@ -9579,11 +9605,11 @@ function itWarnaTable(R, ctx) {
       </div>` : `<div style="padding:18px;text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:11px;">${q.length ? 'Tidak ada warna / kategori yang cocok dengan pencarian.' : 'Tidak ada data untuk filter ini.'}</div>`}`;
 }
 /* ketik langsung memfilter (tanpa Enter); hanya isi tabel yang digambar ulang sehingga kursor di kotak cari tidak hilang */
-function itWarnaSearch(v) {
-  window._itWarnaQ = v;
+function itWarnaRefresh() {
   const box = document.getElementById('it-warna-tbl');
   if (box && itReady && it3.built) box.innerHTML = itWarnaTable(it3Calc(), window._itTab || 'total');
 }
+function itWarnaSearch(v) { window._itWarnaQ = v; itWarnaRefresh(); }
 function itWarnaHtml(R, ctx) {
   if (!it3.warna) {
     return `<div class="cc" style="margin-top:14px;"><div class="ct">Monitoring per Warna</div>
