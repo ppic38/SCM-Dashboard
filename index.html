@@ -9436,7 +9436,11 @@ function itSegKpiHtml(R, rows) {
   const totCogs = rows.reduce((s, r) => s + r.cogs, 0), totInv = rows.reduce((s, r) => s + r.inv, 0), totAvg = rows.reduce((s, r) => s + r.avg, 0);
   const totIto = totAvg > 0 ? totCogs / totAvg : null;
   const totDio = (totIto && totIto > 0) ? Math.round(30 * n / totIto * 10) / 10 : null;
-  const cards = [itKpiCard('Total', itFmtX(totIto), `COGS ${fmtRp(totCogs)} · Inv ${fmtRp(totInv)}${totDio != null ? ' · DIO ' + totDio + ' hari' : ''}`, itItoColor(totIto))];
+  const cards = [
+    itKpiCard('ITO Total', itFmtX(totIto), totDio != null ? `DIO ${totDio} hari` : '', itItoColor(totIto), true),
+    itKpiCard('Total COGS', fmtRpFull(totCogs), `${n} bulan`),
+    itKpiCard('Inventory Akhir', fmtRpFull(totInv), R.last, '#facc15')
+  ];
   rows.filter(r => (totCogs > 0 && r.cogs / totCogs >= 0.001) || (totInv > 0 && r.inv / totInv >= 0.001)).forEach(r => cards.push(itKpiCard(IT_SEG_LABEL[r.sg] || r.sg, r.cogs > 0 ? itFmtX(r.ito) : '—',
     `COGS ${fmtRp(r.cogs)} (${totCogs > 0 ? (r.cogs / totCogs * 100).toFixed(1) : 0}%) · Inv ${fmtRp(r.inv)} (${totInv > 0 ? (r.inv / totInv * 100).toFixed(1) : 0}%)`,
     IT_SEG_COLOR[r.sg] || '#888')));
