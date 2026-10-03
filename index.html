@@ -1789,12 +1789,12 @@ tr:hover td{background:var(--surface2);}
           <button id="it-tabbtn-segmen" onclick="itSetTab('segmen')" style="background:none;border:none;border-bottom:2px solid transparent;padding:9px 16px;font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;cursor:pointer;white-space:nowrap;"><i class="ti ti-category" style="margin-right:6px;"></i>Per Segmen</button>
         </div>
         <div id="it-tab-total">
-        <div id="it-kpi-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:20px;overflow-x:auto;"></div>
+        <div id="it-kpi-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:16px;"></div>
 
         <!-- Tabel detail per Outlet / per Bulan -->
         <div class="cc" style="margin-bottom:14px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-            <div class="ct" style="margin-bottom:0;">Detail Inventory Turnover — Per Bulan</div>
+            <div class="ct" style="margin-bottom:0;">Per Bulan</div>
           </div>
           <div style="overflow-x:auto;max-height:420px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;">
             <table style="width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:11px;">
@@ -8982,45 +8982,12 @@ function itRender() {
   const fTxt = (fSeg || fKat) ? ' · ' + [fSeg ? 'segmen' : '', fKat ? 'kategori' : ''].filter(Boolean).join(' + ') + ' terfilter' : '';
   const avgLbl = basis === 'rata' ? 'Rata-rata Inventory (rata-rata bulanan)' : 'Rata-rata Inventory (Awal+Akhir)/2';
 
-  document.getElementById('it-kpi-grid').innerHTML = `
-    <div class="ns-mc" style="--ns-ac:var(--accent3)">
-      <div class="lbl">Total COGS</div>
-      <div class="val" style="font-size:clamp(12px,1.5vw,16px);">${fmtRpFull(grandCogs)}</div>
-      <div class="sub">${nSt} outlet · ${nBulan} bulan${fTxt}</div>
-    </div>
-    <div class="ns-mc" style="--ns-ac:var(--accent4)">
-      <div class="lbl">${avgLbl}</div>
-      <div class="val" style="font-size:clamp(12px,1.5vw,16px);">${fmtRpFull(avgInventory)}</div>
-      <div class="sub" style="font-size:9px;">${fmtRp(beginningInv)} <span style="color:var(--muted)">→</span> ${fmtRp(endingInv)}</div>
-    </div>
-    <div class="ns-mc" style="--ns-ac:${turnColor}">
-      <div class="lbl">Inventory Turnover</div>
-      <div class="val" style="font-size:22px;font-weight:700;color:${turnColor};">${turnover != null ? turnover.toFixed(3) + '×' : '—'}</div>
-      <div class="sub">COGS ÷ Avg Inventory · ${nBulan} bulan</div>
-    </div>
-    <div class="ns-mc" style="--ns-ac:${projColor};border:1px solid ${projColor}33;">
-      <div class="lbl" style="display:flex;align-items:center;gap:5px;">
-        <i class="ti ti-calendar-stats" style="font-size:11px;color:${projColor};"></i>
-        Proyeksi Turnover (12 Bulan)
-      </div>
-      <div class="val" style="font-size:22px;font-weight:700;color:${projColor};">${proj12 != null ? proj12.toFixed(3) + '×' : '—'}</div>
-      <div class="sub" style="font-size:9px;">(${turnover != null ? turnover.toFixed(3) : '—'}× ÷ ${nBulan} bln) × 12</div>
-    </div>
-    <div class="ns-mc" style="--ns-ac:var(--accent2)">
-      <div class="lbl">DIO (Days Inventory Outstanding)</div>
-      <div class="val" style="font-size:22px;font-weight:700;">${dio != null ? dio + ' hari' : '—'}</div>
-      <div class="sub">(30×${nBulan} bln) ÷ Turnover</div>
-    </div>
-    <div class="ns-mc" style="--ns-ac:#4ade80">
-      <div class="lbl">Beginning Inventory</div>
-      <div class="val" style="font-size:clamp(12px,1.5vw,16px);color:#4ade80;">${fmtRpFull(beginningInv)}</div>
-      <div class="sub">${firstB}</div>
-    </div>
-    <div class="ns-mc" style="--ns-ac:#facc15">
-      <div class="lbl">Ending Inventory</div>
-      <div class="val" style="font-size:clamp(12px,1.5vw,16px);color:#facc15;">${fmtRpFull(endingInv)}</div>
-      <div class="sub">${lastB}</div>
-    </div>`;
+  document.getElementById('it-kpi-grid').innerHTML = [
+    itKpiCard('Inventory Turnover', turnover != null ? turnover.toFixed(3) + '×' : '—', `proyeksi 12 bln ${proj12 != null ? proj12.toFixed(2) + '×' : '—'}`, turnColor, true),
+    itKpiCard('DIO', dio != null ? dio + ' hari' : '—', `${nBulan} bulan`, 'var(--accent2)', true),
+    itKpiCard('Total COGS', fmtRpFull(grandCogs), `${nSt} outlet · ${nBulan} bulan${fTxt}`),
+    itKpiCard('Inventory Akhir', fmtRpFull(endingInv), `${lastB} · awal ${fmtRp(beginningInv)}`, '#facc15'),
+  ].join('');
 
   itRenderTable(R, basis, avgM, avgInventory, grandCogs, turnover, dio);
   itRenderBreakdown(R);
@@ -9046,10 +9013,10 @@ function itRenderTable(R, basis, avgM, avgInventory, grandCogs, grandTurnover, g
   document.getElementById('it-tbl-head').innerHTML = `<tr>
     <th style="${thS}">Bulan</th>
     <th style="${thR}">Total COGS</th>
-    <th style="${thR}">Total Inventory (Snapshot)</th>
+    <th style="${thR}">Inventory Akhir</th>
     ${rata ? `<th style="${thR}">Rata-rata Inventory</th>` : ''}
-    <th style="${thR}">Turnover (Bulan Ini)</th>
-    <th style="${thR}">DIO (Hari)</th>
+    <th style="${thR}">ITO</th>
+    <th style="${thR}">DIO</th>
   </tr>`;
 
   const rows = R.bl.map(b => {
@@ -9067,9 +9034,9 @@ function itRenderTable(R, basis, avgM, avgInventory, grandCogs, grandTurnover, g
     </tr>`;
   });
   rows.push(`<tr style="background:rgba(255,255,255,.04);font-weight:700;">
-    <td style="${tdB}font-weight:700;color:var(--accent)">GRAND TOTAL</td>
+    <td style="${tdB}font-weight:700;color:var(--accent)">PERIODE</td>
     <td style="${tdR}font-weight:700;">${fmtRpFull(grandCogs)}</td>
-    <td style="${tdR}font-weight:700;">${fmtRpFull(avgInventory)}</td>
+    <td style="${tdR}font-weight:700;"><span style="color:var(--muted);font-size:9px;font-weight:400;">rata-rata </span>${fmtRpFull(avgInventory)}</td>
     ${rata ? `<td style="${tdR}font-weight:700;">${fmtRpFull(avgInventory)}</td>` : ''}
     <td style="${tdR}">${turnBadge(grandTurnover)}</td>
     <td style="${tdR}font-weight:700;">${grandDIO != null ? grandDIO + ' hari' : '—'}</td>
@@ -9098,6 +9065,8 @@ function itRenderBreakdown(R) {
     { label:'OH DC',             val:endDC,      color:'#47c8ff', icon:'🏭' },
     { label:'OH Store',          val:endOHStore, color:'#4ade80', icon:'🏪' },
   ];
+  const compBar = `<div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--surface2);margin-bottom:12px;">${COMP.map(c => `<div title="${c.label}" style="width:${endTot > 0 ? Math.max(0, c.val / endTot * 100).toFixed(2) : 0}%;background:${c.color};"></div>`).join('')}</div>
+    <div style="display:flex;gap:10px 22px;flex-wrap:wrap;font-family:var(--font-mono);font-size:11px;">${COMP.map(c => `<div style="display:flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:50%;background:${c.color};"></span><span style="color:var(--muted);">${c.label}</span><b>${isQty ? fmt(c.val) : fmtRp(c.val)}</b><span style="color:var(--muted);">${endTot > 0 ? (c.val / endTot * 100).toFixed(1) : 0}%</span></div>`).join('')}</div>`;
   const cardHtml = COMP.map(c => {
     const pct = endTot > 0 ? (c.val / endTot * 100) : 0;
     return `
@@ -9177,35 +9146,25 @@ function itRenderBreakdown(R) {
     <div style="margin-bottom:16px;">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
         <div style="font-family:var(--font-mono);font-size:9px;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;">
-          ◈ Komposisi Ending Inventory (${lastB}) — ${unitLbl}
+          Komposisi Inventory Akhir (${lastB}) · ${fmt(endTot)}
         </div>
         ${toggleHtml}
       </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">${cardHtml}${totalCard}</div>
+      ${compBar}
       ${R.total ? '' : `<div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:8px;">
-        ⓘ Level store: hanya OH Store dan OD Store. WIP, OD DC, dan OH DC tidak dibagi ke store (0).
+        Level store: hanya OH Store dan OD Store.
       </div>`}
     </div>
 
-    <div class="cc">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-        <div class="ct" style="margin-bottom:0;">Detail Komponen Inventory per Bulan (${unitLbl})</div>
-        <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);">
-          ★ = Ending &nbsp;·&nbsp;
-          <span style="color:#f87171;">■</span> WIP &nbsp;
-          <span style="color:#facc15;">■</span> OD Store &nbsp;
-          <span style="color:#fb923c;">■</span> OD DC &nbsp;
-          <span style="color:#47c8ff;">■</span> OH DC &nbsp;
-          <span style="color:#4ade80;">■</span> OH Store
-        </div>
-      </div>
+    <details class="cc" style="margin-top:14px;">
+      <summary style="cursor:pointer;font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding-bottom:8px;">Detail komponen per bulan (${unitLbl})</summary>
       <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;max-height:360px;overflow-y:auto;">
         <table style="width:100%;border-collapse:collapse;">
           <thead>${headRow}</thead>
           <tbody>${bodyRows.join('')}</tbody>
         </table>
       </div>
-    </div>
+    </details>
 
 `;
 }
@@ -9296,9 +9255,7 @@ function itSegMonitorHtml(R, rows) {
     return `<tr style="${i % 2 ? 'background:rgba(255,255,255,.02);' : ''}">
       <td style="${tdL}"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;background:${c};"></span>${IT_SEG_LABEL[r.sg] || r.sg}</td>
       <td style="${td}${metric === 'cogs' ? hl : ''}">${metric === 'cogs' ? bar(r.cogs / maxCogs * 100, c) : ''}${fmtRpFull(r.cogs)}</td>
-      <td style="${td};color:var(--muted);font-size:10px;">${pct(r.cogs, totCogs)}</td>
       <td style="${td}${metric === 'nominal' ? hl : ''}">${metric === 'nominal' ? bar(r.inv / maxInv * 100, c) : ''}${fmtRpFull(r.inv)}</td>
-      <td style="${td};color:var(--muted);font-size:10px;">${pct(r.inv, totInv)}</td>
       <td style="${td}">${metric === 'ito' ? bar((r.ito || 0) / maxIto * 100, c) : ''}${r.cogs > 0 ? badge(r.ito) : '<span style="color:var(--muted);font-size:10px;">—</span>'}</td>
       <td style="${td}">${(r.cogs > 0 && r.dio != null) ? r.dio + ' hari' : '—'}</td>
     </tr>`;
@@ -9309,22 +9266,19 @@ function itSegMonitorHtml(R, rows) {
         <div class="ct" style="margin-bottom:0;">Monitoring per Segmen — ${period}</div>
         ${controls}
       </div>
-      <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-bottom:10px;">
-        ${levelTxt} · Inventory akhir = ${R.last} · COGS &amp; ITO = periode terpilih · Basis: ${basisTxt}
-      </div>
       ${rows.length ? `
       <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;">
         <table style="width:100%;border-collapse:collapse;">
           <thead><tr>
-            <th style="${thL}">Segmen</th><th style="${th}${metric === 'cogs' ? hl : ''}">COGS${metric === 'cogs' ? ' ▼' : ''}</th><th style="${th}">% COGS</th>
-            <th style="${th}${metric === 'nominal' ? hl : ''}">Inventory Akhir${metric === 'nominal' ? ' ▼' : ''}</th><th style="${th}">% Inv</th>
+            <th style="${thL}">Segmen</th><th style="${th}${metric === 'cogs' ? hl : ''}">COGS${metric === 'cogs' ? ' ▼' : ''}</th>
+            <th style="${th}${metric === 'nominal' ? hl : ''}">Inventory Akhir${metric === 'nominal' ? ' ▼' : ''}</th>
             <th style="${th}${metric === 'ito' ? hl : ''}">ITO${metric === 'ito' ? ' ▼' : ''}</th><th style="${th}">DIO</th>
           </tr></thead>
           <tbody>${body}</tbody>
           <tfoot><tr style="background:rgba(255,255,255,.04);font-weight:700;">
             <td style="${tdL};color:var(--accent);">TOTAL</td>
-            <td style="${td}">${fmtRpFull(totCogs)}</td><td style="${td}"></td>
-            <td style="${td}">${fmtRpFull(totInv)}</td><td style="${td}"></td>
+            <td style="${td}">${fmtRpFull(totCogs)}</td>
+            <td style="${td}">${fmtRpFull(totInv)}</td>
             <td style="${td}">${badge(totIto)}</td>
             <td style="${td}">${totDio != null ? totDio + ' hari' : '—'}</td>
           </tr></tfoot>
@@ -9401,10 +9355,8 @@ function itStoreMonitorHtml(R, rows) {
   const body = rows.map((r, i) => {
     const pct = totInv > 0 ? (r.inv / totInv * 100).toFixed(1) : '0.0';
     return `<tr style="${i % 2 ? 'background:rgba(255,255,255,.02);' : ''}">
-      <td style="${td};text-align:left;color:var(--muted);">${i + 1}</td>
       <td style="${tdL}">${r.s}${r.tutup ? ' <span style="font-weight:400;font-size:9px;color:var(--muted);">(tanpa stok bln terakhir)</span>' : ''}</td>
       <td style="${td}${metric === 'nominal' ? hl : ''}">${metric === 'nominal' ? bar(r.inv / maxInv * 100, 'var(--accent)') : ''}${fmtRpFull(r.inv)}</td>
-      <td style="${td};color:var(--muted);font-size:10px;">${pct}%</td>
       <td style="${td}">${fmtRpFull(r.cogs)}</td>
       <td style="${td}">${metric === 'ito' ? bar((r.ito || 0) / maxIto * 100, '#47c8ff') : ''}${r.cogs > 0 ? badge(r.ito) : '<span style="color:var(--muted);font-size:10px;">—</span>'}</td>
       <td style="${td}">${(r.cogs > 0 && r.dio != null) ? r.dio + ' hari' : '—'}</td>
@@ -9418,22 +9370,19 @@ function itStoreMonitorHtml(R, rows) {
         <div class="ct" style="margin-bottom:0;">Monitoring per Store — ${period}</div>
         ${controls}
       </div>
-      <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-bottom:10px;">
-        Level store (OH + OD store saja, tanpa DC / WIP / OD ke DC) · Inventory akhir = ${R.last} · ITO &amp; COGS = periode terpilih · Basis: ${basisTxt}${segF ? ' · Segmen: ' + (IT_SEG_LABEL[segF] || segF) : ''}
-      </div>
       ${rows.length ? `
       <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;max-height:460px;overflow-y:auto;">
         <table style="width:100%;border-collapse:collapse;">
           <thead><tr>
-            <th style="${thL}">#</th><th style="${thL}">Store</th>
-            <th style="${th}${metric === 'nominal' ? hl : ''}">Inventory Akhir (OH+OD)${metric === 'nominal' ? ' ▼' : ''}</th><th style="${th}">% Inv</th>
+            <th style="${thL}">Store</th>
+            <th style="${th}${metric === 'nominal' ? hl : ''}">Inventory Akhir${metric === 'nominal' ? ' ▼' : ''}</th>
             <th style="${th}">COGS</th>
             <th style="${th}${metric === 'ito' ? hl : ''}">ITO${metric === 'ito' ? ' ▼' : ''}</th><th style="${th}">DIO</th>
           </tr></thead>
           <tbody>${body}</tbody>
           <tfoot><tr style="background:rgba(255,255,255,.04);font-weight:700;">
-            <td style="${td};text-align:left;"></td><td style="${tdL};color:var(--accent);">TOTAL STORE</td>
-            <td style="${td}">${fmtRpFull(totInv)}</td><td style="${td}"></td>
+            <td style="${tdL};color:var(--accent);">TOTAL</td>
+            <td style="${td}">${fmtRpFull(totInv)}</td>
             <td style="${td}">${fmtRpFull(totCogs)}</td><td style="${td}">${badge(totIto)}</td>
             <td style="${td}">${totDio != null ? totDio + ' hari' : '—'}</td>
           </tr></tfoot>
@@ -9458,10 +9407,10 @@ function itSyncTabUI() {
 }
 function itSetTab(t) { window._itTab = t; itSyncTabUI(); itRender(); }
 
-function itKpiCard(label, value, sub, color) {
+function itKpiCard(label, value, sub, color, big) {
   return `<div class="ns-mc" style="--ns-ac:${color || 'var(--accent3)'}">
       <div class="lbl">${label}</div>
-      <div class="val" style="font-size:clamp(13px,1.4vw,18px);${color ? 'color:' + color + ';' : ''}">${value}</div>
+      <div class="val" style="font-size:${big ? '24px' : 'clamp(13px,1.4vw,18px)'};${big ? 'font-weight:700;' : ''}${color ? 'color:' + color + ';' : ''}">${value}</div>
       ${sub ? `<div class="sub" style="font-size:9.5px;">${sub}</div>` : ''}
     </div>`;
 }
@@ -9480,13 +9429,10 @@ function itStoreKpiHtml(R, rows) {
   const big = rows.reduce((a, r) => (!a || r.inv > a.inv) ? r : a, null);
   const segF = window._itStoreSeg ? ' · ' + (IT_SEG_LABEL[window._itStoreSeg] || window._itStoreSeg) : '';
   return [
-    itKpiCard('Store Aktif', `${aktif.length} / ${it3.sel.outlet.size}`, `punya stok di ${R.last}${segF}`, 'var(--accent4)'),
-    itKpiCard('Total COGS', fmtRpFull(totCogs), `${n} bulan · level store`),
+    itKpiCard('ITO Store', itFmtX(totIto), totDio != null ? `DIO ${totDio} hari` : '', itItoColor(totIto), true),
+    itKpiCard('Total COGS', fmtRpFull(totCogs), `${n} bulan${segF}`),
     itKpiCard('Inventory Akhir', fmtRpFull(totInv), `OH + OD store · ${R.last}`, '#facc15'),
-    itKpiCard('ITO Store (Total)', itFmtX(totIto), totDio != null ? `DIO ${totDio} hari` : '', itItoColor(totIto)),
-    itKpiCard('ITO Tertinggi', best ? itFmtX(best.ito) : '—', best ? best.s : '', '#4ade80'),
-    itKpiCard('ITO Terendah', worst ? itFmtX(worst.ito) : '—', worst ? worst.s : '', '#f87171'),
-    itKpiCard('Inventory Terbesar', big ? fmtRp(big.inv) : '—', big ? `${big.s} · ${totInv > 0 ? (big.inv / totInv * 100).toFixed(1) : 0}%` : '', 'var(--accent2)'),
+    itKpiCard('Store Aktif', `${aktif.length} / ${it3.sel.outlet.size}`, 'punya stok di bulan akhir', 'var(--accent4)'),
   ].join('');
 }
 function itSegKpiHtml(R, rows) {
@@ -9494,8 +9440,8 @@ function itSegKpiHtml(R, rows) {
   const totCogs = rows.reduce((s, r) => s + r.cogs, 0), totInv = rows.reduce((s, r) => s + r.inv, 0), totAvg = rows.reduce((s, r) => s + r.avg, 0);
   const totIto = totAvg > 0 ? totCogs / totAvg : null;
   const totDio = (totIto && totIto > 0) ? Math.round(30 * n / totIto * 10) / 10 : null;
-  const cards = [itKpiCard('Total (Sesuai Filter)', itFmtX(totIto), `COGS ${fmtRp(totCogs)} · Inv ${fmtRp(totInv)}${totDio != null ? ' · DIO ' + totDio + ' hari' : ''}`, itItoColor(totIto))];
-  rows.forEach(r => cards.push(itKpiCard(IT_SEG_LABEL[r.sg] || r.sg, r.cogs > 0 ? itFmtX(r.ito) : '—',
+  const cards = [itKpiCard('Total', itFmtX(totIto), `COGS ${fmtRp(totCogs)} · Inv ${fmtRp(totInv)}${totDio != null ? ' · DIO ' + totDio + ' hari' : ''}`, itItoColor(totIto))];
+  rows.filter(r => (totCogs > 0 && r.cogs / totCogs >= 0.001) || (totInv > 0 && r.inv / totInv >= 0.001)).forEach(r => cards.push(itKpiCard(IT_SEG_LABEL[r.sg] || r.sg, r.cogs > 0 ? itFmtX(r.ito) : '—',
     `COGS ${fmtRp(r.cogs)} (${totCogs > 0 ? (r.cogs / totCogs * 100).toFixed(1) : 0}%) · Inv ${fmtRp(r.inv)} (${totInv > 0 ? (r.inv / totInv * 100).toFixed(1) : 0}%)`,
     IT_SEG_COLOR[r.sg] || '#888')));
   return cards.join('');
@@ -9602,31 +9548,27 @@ function itWarnaTable(R, ctx) {
       ${showW ? `<td style="${tdL}">${r.g === 'TIGALAPAN' ? itEsc(r.w) : '<span style="color:var(--muted);font-weight:400;">—</span>'}</td>
       <td style="${td};text-align:left;color:var(--muted);font-size:10px;">${itEsc(r.k)}</td>` : `<td style="${tdL}">${itEsc(r.k)}</td>`}
       <td style="${td}${metric === 'cogs' ? hl : ''}">${metric === 'cogs' ? bar(r.cogs / maxCogs * 100, c) : ''}${fmtRpFull(r.cogs)}</td>
-      <td style="${td};color:var(--muted);font-size:10px;">${pct(r.cogs, allCogs)}</td>
       <td style="${td}${metric === 'nominal' ? hl : ''}">${metric === 'nominal' ? bar(r.inv / maxInv * 100, c) : ''}${fmtRpFull(r.inv)}</td>
-      <td style="${td};color:var(--muted);font-size:10px;">${pct(r.inv, allInv)}</td>
       <td style="${td}">${metric === 'ito' ? bar((r.ito || 0) / maxIto * 100, c) : ''}${r.cogs > 0 ? badge(r.ito) : '<span style="color:var(--muted);font-size:10px;">—</span>'}</td>
       <td style="${td}">${(r.cogs > 0 && r.dio != null) ? r.dio + ' hari' : '—'}</td>
     </tr>`).join('');
   const cnt = q.length ? `${shown.length} dari ${all.length} baris` : `${shown.length} baris`;
   return `
-      <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-bottom:10px;">
-        ${period} · ${cnt} · ${levelTxt} · Inventory akhir = ${R.last} · COGS &amp; ITO = periode terpilih · Basis: ${basisTxt} · Mengikuti filter Bulan / Store / Segmen / Kategori${q.length ? ' · % terhadap total segmen yang dipilih' : ''}
-      </div>
+      <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-bottom:8px;">${cnt}</div>
       ${shown.length ? `
       <div style="overflow:auto;max-height:560px;border:1px solid var(--border);border-radius:8px;">
         <table style="width:100%;border-collapse:collapse;">
           <thead><tr>
             ${showW ? `<th style="${thL}">Warna</th>` : ''}<th style="${thL}">Kategori</th>
-            <th style="${th}${metric === 'cogs' ? hl : ''}">COGS${metric === 'cogs' ? ' ▼' : ''}</th><th style="${th}">% COGS</th>
-            <th style="${th}${metric === 'nominal' ? hl : ''}">Inventory Akhir${metric === 'nominal' ? ' ▼' : ''}</th><th style="${th}">% Inv</th>
+            <th style="${th}${metric === 'cogs' ? hl : ''}">COGS${metric === 'cogs' ? ' ▼' : ''}</th>
+            <th style="${th}${metric === 'nominal' ? hl : ''}">Inventory Akhir${metric === 'nominal' ? ' ▼' : ''}</th>
             <th style="${th}${metric === 'ito' ? hl : ''}">ITO${metric === 'ito' ? ' ▼' : ''}</th><th style="${th}">DIO</th>
           </tr></thead>
           <tbody>${body}</tbody>
           <tfoot><tr style="background:rgba(255,255,255,.04);font-weight:700;">
             <td style="${tdL};color:var(--accent);">TOTAL${q.length ? ' (hasil cari)' : ''}</td>${showW ? `<td style="${td}"></td>` : ''}
-            <td style="${td}">${fmtRpFull(totCogs)}</td><td style="${td}"></td>
-            <td style="${td}">${fmtRpFull(totInv)}</td><td style="${td}"></td>
+            <td style="${td}">${fmtRpFull(totCogs)}</td>
+            <td style="${td}">${fmtRpFull(totInv)}</td>
             <td style="${td}">${badge(totIto)}</td>
             <td style="${td}">${totDio != null ? totDio + ' hari' : '—'}</td>
           </tr></tfoot>
