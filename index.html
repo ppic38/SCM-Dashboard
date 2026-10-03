@@ -9560,9 +9560,9 @@ function itWarnaTable(R, ctx) {
         <table style="width:100%;border-collapse:collapse;">
           <thead><tr>
             ${showW ? `<th style="${thL}">Warna</th>` : ''}<th style="${thL}">Kategori</th>
-            <th style="${th}${metric === 'cogs' ? hl : ''}">COGS${metric === 'cogs' ? ' ▼' : ''}</th>
-            <th style="${th}${metric === 'nominal' ? hl : ''}">Inventory Akhir${metric === 'nominal' ? ' ▼' : ''}</th>
-            <th style="${th}${metric === 'ito' ? hl : ''}">ITO${metric === 'ito' ? ' ▼' : ''}</th><th style="${th}">DIO</th>
+            <th onclick="itSetWarnaMetric('cogs')" style="${th}cursor:pointer;${metric === 'cogs' ? hl : ''}">COGS${metric === 'cogs' ? ' ▼' : ''}</th>
+            <th onclick="itSetWarnaMetric('nominal')" style="${th}cursor:pointer;${metric === 'nominal' ? hl : ''}">Inventory Akhir${metric === 'nominal' ? ' ▼' : ''}</th>
+            <th onclick="itSetWarnaMetric('ito')" style="${th}cursor:pointer;${metric === 'ito' ? hl : ''}">ITO${metric === 'ito' ? ' ▼' : ''}</th><th style="${th}">DIO</th>
           </tr></thead>
           <tbody>${body}</tbody>
           <tfoot><tr style="background:rgba(255,255,255,.04);font-weight:700;">
@@ -9596,8 +9596,7 @@ function itWarnaHtml(R, ctx) {
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px;">
         <div class="ct" style="margin-bottom:0;">Monitoring per Warna / Kategori</div>
         <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
-          <div style="display:flex;gap:6px;align-items:center;">${lbl('Tampilkan:')}${grp([{v:'ito', l:'ITO'}, {v:'nominal', l:'Nominal Inventory'}, {v:'cogs', l:'COGS'}], metric, 'itSetWarnaMetric')}</div>
-          <div style="display:flex;gap:6px;align-items:center;">${lbl('Segmen:')}${grp([{v:'semua', l:'Semua'}, {v:'TIGALAPAN', l:'Tigalapan'}, {v:'MAMU', l:'Mamu'}, {v:'DLL', l:'DLL'}, {v:'REJECT', l:'Reject'}], window._itWarnaView || 'semua', 'itSetWarnaView')}</div>
+          <div style="display:flex;gap:6px;align-items:center;">${lbl('Brand:')}${grp([{v:'semua', l:'SEMUA'}, {v:'TIGALAPAN', l:'TIGALAPAN'}, {v:'MAMU', l:'MAMU'}, {v:'DLL', l:'LAINNYA'}, {v:'REJECT', l:'REJECT'}], window._itWarnaView || 'semua', 'itSetWarnaView')}</div>
           <div style="display:flex;gap:6px;align-items:center;position:relative;">
             <i class="ti ti-search" style="position:absolute;left:10px;font-size:12px;color:var(--muted);pointer-events:none;"></i>
             <input id="it-warna-q" type="search" value="${itEsc(window._itWarnaQ || '')}" placeholder="Cari warna / kategori, mis. hitam" autocomplete="off" oninput="itWarnaSearch(this.value)"
