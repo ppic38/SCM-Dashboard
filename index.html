@@ -1784,7 +1784,7 @@ tr:hover td{background:var(--surface2);}
           <button id="it-tabbtn-segmen" onclick="itSetTab('segmen')" style="background:none;border:none;border-bottom:2px solid transparent;padding:9px 16px;font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;cursor:pointer;white-space:nowrap;"><i class="ti ti-category" style="margin-right:6px;"></i>Per Brand</button>
         </div>
         <div id="it-tab-total">
-        <div id="it-kpi-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:16px;"></div>
+        <div id="it-kpi-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:16px;"></div>
 
         <!-- Tabel detail per Outlet / per Bulan -->
         <div class="cc" style="margin-bottom:14px;">
@@ -8992,12 +8992,35 @@ function itRender() {
   const fTxt = (fSeg || fKat) ? ' · ' + [fSeg ? 'segmen' : '', fKat ? 'kategori' : ''].filter(Boolean).join(' + ') + ' terfilter' : '';
   const avgLbl = basis === 'rata' ? 'Rata-rata Inventory (rata-rata bulanan)' : 'Rata-rata Inventory (Awal+Akhir)/2';
 
-  document.getElementById('it-kpi-grid').innerHTML = [
-    itKpiCard('Inventory Turnover', turnover != null ? turnover.toFixed(3) + '×' : '—', `proyeksi 12 bln ${proj12 != null ? proj12.toFixed(2) + '×' : '—'}`, turnColor, true),
-    itKpiCard('DIO', dio != null ? dio + ' hari' : '—', `${nBulan} bulan`, 'var(--accent2)', true),
-    itKpiCard('Total COGS', fmtRpFull(grandCogs), `${nSt} outlet · ${nBulan} bulan${fTxt}`),
-    itKpiCard('Inventory Akhir', fmtRpFull(endingInv), `${lastB} · awal ${fmtRp(beginningInv)}`, '#facc15'),
-  ].join('');
+  document.getElementById('it-kpi-grid').innerHTML = `
+    <div class="ns-mc" style="--ns-ac:var(--accent3)">
+      <div class="lbl">Total COGS</div>
+      <div class="val" style="font-size:clamp(12px,1.5vw,16px);">${fmtRpFull(grandCogs)}</div>
+      <div class="sub">${nSt} outlet · ${nBulan} bulan${fTxt}</div>
+    </div>
+    <div class="ns-mc" style="--ns-ac:#facc15">
+      <div class="lbl">Inventory Akhir</div>
+      <div class="val" style="font-size:clamp(12px,1.5vw,16px);color:#facc15;">${fmtRpFull(endingInv)}</div>
+      <div class="sub">${lastB} · awal ${fmtRp(beginningInv)}</div>
+    </div>
+    <div class="ns-mc" style="--ns-ac:${turnColor}">
+      <div class="lbl">Inventory Turnover</div>
+      <div class="val" style="font-size:22px;font-weight:700;color:${turnColor};">${turnover != null ? turnover.toFixed(3) + '×' : '—'}</div>
+      <div class="sub">COGS ÷ Avg Inventory · ${nBulan} bulan</div>
+    </div>
+    <div class="ns-mc" style="--ns-ac:${projColor};border:1px solid ${projColor}33;">
+      <div class="lbl" style="display:flex;align-items:center;gap:5px;">
+        <i class="ti ti-calendar-stats" style="font-size:11px;color:${projColor};"></i>
+        Proyeksi Turnover (12 Bulan)
+      </div>
+      <div class="val" style="font-size:22px;font-weight:700;color:${projColor};">${proj12 != null ? proj12.toFixed(3) + '×' : '—'}</div>
+      <div class="sub" style="font-size:9px;">(${turnover != null ? turnover.toFixed(3) : '—'}× ÷ ${nBulan} bln) × 12</div>
+    </div>
+    <div class="ns-mc" style="--ns-ac:var(--accent2)">
+      <div class="lbl">DIO (Days Inventory Outstanding)</div>
+      <div class="val" style="font-size:22px;font-weight:700;">${dio != null ? dio + ' hari' : '—'}</div>
+      <div class="sub">(30×${nBulan} bln) ÷ Turnover</div>
+    </div>`;
 
   itRenderTable(R, basis, avgM, avgInventory, grandCogs, turnover, dio);
   itRenderBreakdown(R);
