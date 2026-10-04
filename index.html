@@ -9559,6 +9559,71 @@ function it3WarnaMon(R, ctx) {
 function itSetWarnaView(v) { window._itWarnaView = v; itRender(); }
 function itSetWarnaMetric(m) { window._itWarnaMetric = m; itRender(); }
 
+/* ── Detail item (size) di bawah baris warna / kategori: klik baris untuk buka-tutup ──
+   Data per kategori di data/item/<slug>.csv (dimuat saat pertama kali diklik). Kolom: Bulan, Store, Warna, Item, COGS, OH Qty, OD Qty, WIP Qty, HPP, Inventory Akhir, Inventory Awal */
+window._itItemCache = window._itItemCache || {};
+window._itWarnaOpen = window._itWarnaOpen || {};
+function itSlug(k) { return String(k).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
+function itItemLoad(k) {
+  const sl = itSlug(k);
+  if (window._itItemCache[sl]) return;
+  window._itItemCache[sl] = 'loading';
+  const n = v => { const x = Number(v); return isFinite(x) ? x : 0; };
+  Papa.parse((window.IT_ITEM_BASE || 'data/item/') + sl + '.csv', { download: true, header: true, skipEmptyLines: true,
+    complete(r) {
+      window._itItemCache[sl] = (r.data || []).map(x => ({ b: itNormBulan(x['Bulan']), s: String(x['Store']).trim().toUpperCase(), w: String(x['Warna']).trim().toUpperCase(),
+        it: String(x['Item']).trim(), cogs: n(x['COGS']), ohq: n(x['OH Qty']), odq: n(x['OD Qty']), nsq: n(x['WIP Qty']), hpp: n(x['HPP']),
+        akhir: n(x['Inventory Akhir']), awal: n(x['Inventory Awal']) }));
+      if (!window._itItemCache[sl].length) window._itItemCache[sl] = 'error';
+      itWarnaRefresh();
+    },
+    error() { window._itItemCache[sl] = 'error'; itWarnaRefresh(); } });
+}
+function itWarnaToggle(enc) {
+  const key = decodeURIComponent(enc), o = window._itWarnaOpen;
+  if (o[key]) delete o[key]; else { o[key] = true; itItemLoad(key.split('\u0001')[0]); }
+  itWarnaRefresh();
+}
+const IT_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL', '7XL', '8XL'];
+function itSizeRank(name) {
+  const t = String(name).trim().split(/\s+/), sz = IT_SIZES.indexOf(t[t.length - 1]), ln = t[t.length - 2];
+  return (sz < 0 ? 999 : (ln === 'PDK' ? 0 : ln === 'PJG' ? 1 : 2) * 100 + sz);
+}
+function itWarnaItems(R, ctx, k, w) {
+  const cache = window._itItemCache[itSlug(k)];
+  if (!Array.isArray(cache)) return cache;
+  const sel = it3.sel, bl = new Set(R.bl), outlets = new Set(it3.all.outlet);
+  const stF = ctx === 'segmen' ? (window._itSegStore || null) : null;
+  const useTotal = ctx !== 'store' && R.total && !stF;
+  const mi = {}; R.bl.forEach((b, i) => { mi[b] = i; });
+  const per = {};
+  cache.forEach(x => {
+    if (x.w !== w || !bl.has(x.b)) return;
+    let inv, qty;
+    if (useTotal) { inv = x.akhir; qty = x.ohq + x.odq + x.nsq; }
+    else { if (!outlets.has(x.s) || !(stF ? x.s === stF : sel.outlet.has(x.s))) return; inv = x.akhir; qty = x.ohq + x.odq; }
+    const o = (per[x.it] = per[x.it] || { it: x.it, m: {}, hpp: 0, hm: -1 });
+    const z = (o.m[x.b] = o.m[x.b] || { cogs: 0, akhir: 0, awal: 0, qty: 0 });
+    z.cogs += x.cogs; z.akhir += inv; z.awal += x.awal; z.qty += qty;
+    if (x.hpp > 0 && mi[x.b] >= o.hm) { o.hpp = x.hpp; o.hm = mi[x.b]; }
+  });
+  const basis = window._it3Basis || 'rata', n = R.bl.length, out = [];
+  Object.keys(per).forEach(name => {
+    const o = per[name], m = o.m; let cogs = 0, avg = 0;
+    R.bl.forEach(b => { if (m[b]) cogs += m[b].cogs; });
+    const inv = m[R.last] ? m[R.last].akhir : 0, qty = m[R.last] ? m[R.last].qty : 0;
+    if (basis === 'rata') {
+      let sum = 0;
+      R.bl.forEach(b => { const z = m[b]; if (z) sum += (z.awal > 0 ? (z.awal + z.akhir) / 2 : z.akhir); });
+      avg = sum / n;
+    } else avg = ((m[R.first] ? m[R.first].akhir : 0) + inv) / 2;
+    if (!cogs && !inv && !avg && !qty) return;
+    const ito = (avg > 0 && inv > 0) ? cogs / avg : null;
+    out.push({ it: name, cogs, inv, qty, avg, ito, dio: (ito && ito > 0) ? Math.round(30 * n / ito * 10) / 10 : null, hpp: o.hpp });
+  });
+  out.sort((a, b) => (itSizeRank(a.it) - itSizeRank(b.it)) || a.it.localeCompare(b.it));
+  return out;
+}
 function itWarnaQuery() { return String(window._itWarnaQ || '').trim().toUpperCase().split(/\s+/).filter(Boolean); }
 function itWarnaTable(R, ctx) {
   const { rows, useTotal } = it3WarnaMon(R, ctx), n = R.bl.length;
@@ -9593,15 +9658,39 @@ function itWarnaTable(R, ctx) {
   const period = n > 1 ? `${R.first} – ${R.last} (${n} bulan)` : R.first;
   const basisTxt = (window._it3Basis || 'rata') === 'rata' ? 'Rata-rata (awal+akhir)' : 'Akhir bulan';
   const levelTxt = useTotal ? 'Level TOTAL (incl. DC, WIP, OD ke DC)' : 'Level STORE (OH + OD store saja' + (stF ? ' · ' + stF : '') + ')';
-  const body = sorted.map((r, i) => `<tr style="${i % 2 ? 'background:rgba(255,255,255,.02);' : ''}">
-      ${showW ? `<td style="${tdL}">${r.g === 'TIGALAPAN' ? itEsc(r.w) : '<span style="color:var(--muted);font-weight:400;">—</span>'}</td>
-      <td style="${td};text-align:left;color:var(--muted);font-size:10px;">${itEsc(r.k)}</td>` : `<td style="${tdL}">${itEsc(r.k)}</td>`}
+  const span = showW ? 7 : 6;
+  const tdM = td + 'color:var(--muted);font-size:10px;';
+  const detail = r => {
+    if (!window._itWarnaOpen[r.k + '\u0001' + r.w]) return '';
+    const items = itWarnaItems(R, ctx, r.k, r.w);
+    const msg = t => `<tr style="background:rgba(71,200,255,.05);"><td colspan="${span}" style="${td};text-align:left;color:var(--muted);padding-left:34px;">${t}</td></tr>`;
+    if (items === undefined || items === 'loading') return msg('Memuat detail item…');
+    if (items === 'error') return msg('Detail item belum tersedia untuk kategori ini.');
+    if (!items.length) return msg('Tidak ada item untuk filter ini.');
+    const hppTxt = x => x.hpp > 0 ? 'HPP ' + fmtRpFull(x.hpp) : (x.qty > 0 ? '<span style="color:#f87171;">tanpa HPP</span>' : '—');
+    return items.map(x => `<tr style="background:rgba(71,200,255,.05);">
+      ${showW ? `<td style="${td};text-align:left;padding-left:34px;font-size:10.5px;">${itEsc(x.it)}</td><td style="${tdM}">${hppTxt(x)}</td>`
+              : `<td style="${td};text-align:left;padding-left:34px;font-size:10.5px;">${itEsc(x.it)} <span style="color:var(--muted);font-size:9.5px;">· ${hppTxt(x)}</span></td>`}
+      <td style="${td};font-size:10.5px;">${fmtRpFull(x.cogs)}</td>
+      <td style="${td};font-size:10.5px;">${fmtRpFull(x.inv)}</td>
+      <td style="${td};font-size:10.5px;">${itFmtQty(x.qty)}</td>
+      <td style="${td}">${x.cogs > 0 ? badge(x.ito) : '<span style="color:var(--muted);font-size:10px;">—</span>'}</td>
+      <td style="${td};font-size:10.5px;">${(x.cogs > 0 && x.dio != null) ? x.dio + ' hari' : '—'}</td>
+    </tr>`).join('');
+  };
+  const body = sorted.map((r, i) => {
+    const op = !!window._itWarnaOpen[r.k + '\u0001' + r.w];
+    const caret = `<span style="opacity:.55;margin-right:6px;">${op ? '▾' : '▸'}</span>`;
+    return `<tr onclick="itWarnaToggle('${encodeURIComponent(r.k + '\u0001' + r.w)}')" style="cursor:pointer;${i % 2 ? 'background:rgba(255,255,255,.02);' : ''}">
+      ${showW ? `<td style="${tdL}">${caret}${r.g === 'TIGALAPAN' ? itEsc(r.w) : '<span style="color:var(--muted);font-weight:400;">—</span>'}</td>
+      <td style="${td};text-align:left;color:var(--muted);font-size:10px;">${itEsc(r.k)}</td>` : `<td style="${tdL}">${caret}${itEsc(r.k)}</td>`}
       <td style="${td}${metric === 'cogs' ? hl : ''}">${metric === 'cogs' ? bar(r.cogs / maxCogs * 100, c) : ''}${fmtRpFull(r.cogs)}</td>
       <td style="${td}${metric === 'nominal' ? hl : ''}">${metric === 'nominal' ? bar(r.inv / maxInv * 100, c) : ''}${fmtRpFull(r.inv)}</td>
       <td style="${td}${metric === 'qty' ? hl : ''}">${metric === 'qty' ? bar(r.qty / maxQty * 100, c) : ''}${itFmtQty(r.qty)}</td>
       <td style="${td}">${metric === 'ito' ? bar((r.ito || 0) / maxIto * 100, c) : ''}${r.cogs > 0 ? badge(r.ito) : '<span style="color:var(--muted);font-size:10px;">—</span>'}</td>
       <td style="${td}">${(r.cogs > 0 && r.dio != null) ? r.dio + ' hari' : '—'}</td>
-    </tr>`).join('');
+    </tr>${detail(r)}`;
+  }).join('');
   const cnt = q.length ? `${shown.length} dari ${all.length} baris` : `${shown.length} baris`;
   return `
       <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-bottom:8px;">${cnt}</div>
