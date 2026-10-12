@@ -5716,9 +5716,6 @@ function renderKlasifikasi(rows) {
 
   /* ── Helper: donut chart ── */
   function buildKlasDonut(keys, totMap, canvasId) {
-    /* nilai & persentase tampil langsung: di legenda (Rp + %) dan di irisan (%), tanpa perlu hover */
-    const donutTotal = keys.reduce((s,k) => s + (totMap[k]||0), 0);
-    const pctOf = v => donutTotal > 0 ? (v / donutTotal * 100).toFixed(1) + '%' : '0.0%';
     mkChart(canvasId, canvasId, {
       type:'doughnut',
       data:{
@@ -5730,22 +5727,9 @@ function renderKlasifikasi(rows) {
       options:{
         responsive:true, maintainAspectRatio:false, cutout:'60%',
         plugins:{
-          legend:{ position:'right', labels:{color:M.color,font:{size:11,family:'DM Mono'},boxWidth:12,padding:10,
-            generateLabels(chart) {
-              const ds = chart.data.datasets[0];
-              return chart.data.labels.map((l, i) => ({
-                text: `${l}   ${fmtRpFull(ds.data[i])}   (${pctOf(ds.data[i])})`,
-                fillStyle: ds.backgroundColor[i], strokeStyle: ds.borderColor[i], lineWidth: 1,
-                fontColor: M.color, hidden: !chart.getDataVisibility(i), index: i
-              }));
-            } } },
-          tooltip:{ callbacks:{ label: ctx => `${ctx.label}: ${fmtRpFull(ctx.raw)} (${pctOf(ctx.raw)})` }},
-          datalabels:{
-            display: ctx => donutTotal > 0 && ctx.dataset.data[ctx.dataIndex] / donutTotal >= 0.04,
-            color:'#fff', font:{ size:11, family:'DM Mono', weight:'bold' },
-            textStrokeColor:'rgba(0,0,0,.55)', textStrokeWidth:3,
-            formatter: v => pctOf(v)
-          }
+          legend:{ position:'right', labels:{color:M.color,font:{size:10,family:'DM Mono'},boxWidth:12} },
+          tooltip:{ callbacks:{ label: ctx => `${ctx.label}: ${fmtRpFull(ctx.raw)}` }},
+          datalabels:{ display:false }
         }
       }
     });
