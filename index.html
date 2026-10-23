@@ -5506,8 +5506,9 @@ window.klasSetMode = function(mode) {
 
 /* ── Filter rows dengan filter independen klasifikasi ──
    CATATAN: Bulan & Store tetap independen (filter sendiri di halaman Klasifikasi),
-   TAPI Alasan Lose Sale WAJIB ikut filter yang sama dengan halaman Lose Sales
-   (Settings → Filter Alasan Lose Sales, default: 'Stock Tidak Lengkap' & 'Stock Kosong'),
+   TAPI Alasan Lose Sale dan Kategori WAJIB ikut filter yang sama dengan halaman Lose Sales
+   (Settings → Filter Alasan Lose Sales, default: 'Stock Tidak Lengkap' & 'Stock Kosong';
+   Settings → Filter Kategori, mis. untuk membuang '30s PHASEOUT'),
    supaya Total Lose Sales di kedua halaman konsisten/apple-to-apple.
 
    PENTING: baca langsung checkbox yang TERCENTANG di DOM (persis seperti getFilteredRows
@@ -5533,13 +5534,23 @@ function klasGetFilteredRows() {
     : new Set(DEFAULT_ALASAN);
   const cA = COL.alasan || 'ALASAN LOSE SALE';
 
+  /* Kategori aktif = checkbox #s-cat yang tercentang di Settings (sama dengan getFilteredRows).
+     Elemen belum ter-render -> null (jangan membatasi). */
+  const kategoriEls = document.querySelectorAll('#s-cat input');
+  const selKategori = kategoriEls.length
+    ? new Set(Array.from(kategoriEls).filter(i => i.checked).map(i => i.value))
+    : null;
+  const cK = COL.kategori || 'KATEGORI';
+
   return _klasAllRows.filter(r => {
     const b = (r[COL.bulan||'BULAN']||'').trim();
     const s = (r[COL.store||'STORE']||'').trim();
     const a = ((r[cA]||'').trim()) || 'Tidak diketahui';
+    const k = (r[cK]||'').trim();
     if (selBulan !== null && !selBulan.has(b)) return false;
     if (selStore !== null && !selStore.has(s)) return false;
     if (!selAlasan.has(a)) return false;
+    if (selKategori !== null && !selKategori.has(k)) return false;
     return true;
   });
 }
