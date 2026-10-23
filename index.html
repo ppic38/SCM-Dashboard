@@ -3551,7 +3551,8 @@ tr:hover td{background:var(--surface2);}
       <button class="apply-btn" onclick="applyAndReturn()">
         <i class="ti ti-check" style="font-size:15px"></i> Terapkan Filter
       </button>
-      <span class="save-toast" id="save-toast">✓ Diterapkan</span>
+      <button class="ca-btn" onclick="settingsReset()" style="margin-left:10px;" title="Hapus pilihan tersimpan dan kembali ke bawaan">↺ Kembalikan ke bawaan</button>
+      <span class="save-toast" id="save-toast">✓ Diterapkan & disimpan</span>
     </div>
   </div>
 
@@ -4442,10 +4443,39 @@ function syncQfFromSettings() {
    most actionable stock-related reasons from the start. */
 const DEFAULT_ALASAN = new Set(['Stock Tidak Lengkap', 'Stock Kosong']);
 
+/* ── Simpan permanen pilihan di Filter & Pengaturan (localStorage, per browser) ──
+   Disimpan saat 'Terapkan Filter' ditekan. Yang dicatat: nilai tercentang & tidak tercentang; nilai BARU yang
+   belum pernah dicatat (bulan/kategori baru) memakai bawaan (tercentang; alasan: hanya DEFAULT_ALASAN). */
+const SETTINGS_STORE_KEY = 'scm_filter_settings_v1';
+const SETTINGS_GROUPS = ['s-bulan', 's-toko', 's-cat', 's-alasan'];
+function settingsSaved() {
+  try { return JSON.parse(localStorage.getItem(SETTINGS_STORE_KEY) || 'null'); } catch (e) { return null; }
+}
+function settingsSave() {
+  const o = {};
+  SETTINGS_GROUPS.forEach(id => {
+    o[id] = { on: [], off: [] };
+    document.querySelectorAll('#' + id + ' input').forEach(i => { (i.checked ? o[id].on : o[id].off).push(i.value); });
+  });
+  try { localStorage.setItem(SETTINGS_STORE_KEY, JSON.stringify(o)); } catch (e) {}
+}
+function settingsReset() {
+  try { localStorage.removeItem(SETTINGS_STORE_KEY); } catch (e) {}
+  populateFilters();
+  syncQfFromSettings();
+  applyFilter();
+  const t = document.getElementById('save-toast');
+  if (t) { t.textContent = '✓ Dikembalikan ke bawaan'; t.classList.add('show'); setTimeout(() => { t.classList.remove('show'); t.textContent = '✓ Diterapkan & disimpan'; }, 1800); }
+}
+
 function fillCbGrp(id, items) {
+  const saved = settingsSaved(), sv = saved && saved[id];
   document.getElementById(id).innerHTML = items.map(v => {
-    /* For alasan checkboxes, only check the two default ones; all others start unchecked */
-    const checked = (id === 's-alasan') ? DEFAULT_ALASAN.has(v) : true;
+    /* Pilihan tersimpan diutamakan; nilai baru memakai bawaan (alasan: hanya dua alasan default, lainnya tercentang) */
+    let checked;
+    if (sv && sv.on && sv.on.includes(v)) checked = true;
+    else if (sv && sv.off && sv.off.includes(v)) checked = false;
+    else checked = (id === 's-alasan') ? DEFAULT_ALASAN.has(v) : true;
     return `<label class="cb-item"><input type="checkbox" value="${v}" ${checked?'checked':''}> ${v}</label>`;
   }).join('');
 }
@@ -4612,6 +4642,7 @@ function applyFilter() {
 }
 
 function applyAndReturn() {
+  settingsSave();
   syncQfFromSettings();
   applyFilter();
   const t = document.getElementById('save-toast');
