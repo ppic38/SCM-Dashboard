@@ -3525,6 +3525,7 @@ tr:hover td{background:var(--surface2);}
           <button class="ca-btn" onclick="checkAll('s-cat',false)">× Hapus Semua</button>
         </div>
         <div class="cb-grp" id="s-cat"></div>
+        <div class="sdesc" id="s-cat-note" style="margin-top:12px;margin-bottom:0;"></div>
       </div>
 
       <div class="set-sec">
@@ -3563,6 +3564,10 @@ tr:hover td{background:var(--surface2);}
    CONSTANTS
 ════════════════════════════════════════════════ */
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSc2BYYVRu6fswcdM77_rJDh1ZGFoFAxTvEajwlIrPkCWmvklotc0fro1cYe9rHofxnYVEVvlT9da51/pub?gid=756178217&single=true&output=csv';
+
+/* KATEGORI YANG DIKECUALIKAN PERMANEN dari semua perhitungan Lose Sales (halaman Lose Sales, Klasifikasi, dan turunannya).
+   Berlaku sama untuk semua pengguna & browser (diatur di kode, bukan di browser). Ubah daftar ini lalu deploy untuk mengganti aturan. */
+const KATEGORI_DIKECUALIKAN = [/30s\s*PHASE\s*OUT/i];   /* COMBED 30s PHASEOUT, KID 30s PHASEOUT */
 
 const EXCLUDE_COLS = new Set([
   'TANGGAL','KEY','NAMA CUSTOMER (SESUAI DATA BASE)','NAMA CUSTOMER',
@@ -4359,6 +4364,20 @@ function loadData() {
         return;
       }
       resolveColumns(allRows);  /* resolve column names once */
+      /* Buang kategori yang dikecualikan permanen SEBELUM semua perhitungan/filter/daftar pilihan dibuat */
+      {
+        const cKat = COL.kategori || 'KATEGORI', before = allRows.length, nama = new Set();
+        allRows = allRows.filter(r => {
+          const k = (r[cKat] || '').trim();
+          if (KATEGORI_DIKECUALIKAN.some(rx => rx.test(k))) { nama.add(k); return false; }
+          return true;
+        });
+        window._kategoriDikecualikan = { baris: before - allRows.length, nama: [...nama].sort() };
+        const note = document.getElementById('s-cat-note');
+        if (note) note.innerHTML = window._kategoriDikecualikan.nama.length
+          ? 'Dikecualikan permanen dari perhitungan (semua pengguna): <b>' + window._kategoriDikecualikan.nama.join(', ') + '</b> (' + window._kategoriDikecualikan.baris.toLocaleString('id-ID') + ' baris)'
+          : '';
+      }
       allRows.forEach(r => { r.__bulanEff = computeBulanEff(r); });  /* Opsi B month, dipakai halaman Lose Sales */
       if (!filtersPopulated) { populateFilters(); syncQfFromSettings(); filtersPopulated = true; }
       applyFilter();
