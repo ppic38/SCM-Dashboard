@@ -1220,6 +1220,18 @@ tr:hover td{background:var(--surface2);}
                 </div>
               </div>
               <div style="width:1px;height:36px;background:var(--border);"></div>
+              <!-- Filter data: Semua | Net Sales saja -->
+              <style>body.net-only #trend-combo-pct, body.net-only #weekly-pct-label {display:none;}</style>
+              <div style="display:flex;flex-direction:column;gap:3px;">
+                <span style="font-family:var(--font-mono);font-size:8px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;">Tampilkan Data</span>
+                <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:3px;">
+                  <button class="net-only-btn tab-btn active" id="net-only-off" onclick="netOnlySet(false,this)"
+                    style="border:none;border-radius:5px;" title="Tampilkan Sales, Lose Sales dan % Lose/Sales">Semua</button>
+                  <button class="net-only-btn tab-btn" id="net-only-on" onclick="netOnlySet(true,this)"
+                    style="border:none;border-radius:5px;" title="Tampilkan Net Sales saja (sembunyikan Lose Sales dan %)">Net Sales Saja</button>
+                </div>
+              </div>
+              <div style="width:1px;height:36px;background:var(--border);"></div>
               <!-- Week period selector — hanya aktif saat Mingguan -->
               <div id="weekly-period-wrap" style="display:none;flex-direction:column;gap:3px;">
                 <span style="font-family:var(--font-mono);font-size:8px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;">Pilih Bulan</span>
@@ -4776,7 +4788,20 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
+/* Filter "Net Sales Saja": hanya dataset 'Sales' yang digambar di chart Lose Sales & Sales
+   (Per Store / Total Bulanan / Mingguan). Lose Sales, garis %, dan axis % disembunyikan. */
+const NET_ONLY_KEYS = ['store','trendCombo','weekly'];
+function applyNetOnly(key, cfg) {
+  if (!window._netOnly || !NET_ONLY_KEYS.includes(key) || !cfg.data || !cfg.data.datasets) return;
+  cfg.data.datasets = cfg.data.datasets.filter(d => d.label === 'Sales');
+  const opt = cfg.options || {};
+  if (opt.scales && opt.scales.yPct) opt.scales.yPct.display = false;
+  const cb = opt.plugins && opt.plugins.tooltip && opt.plugins.tooltip.callbacks;
+  if (cb && cb.afterBody) { const orig = cb.afterBody; cb.afterBody = tt => orig(tt).slice(0, 1); }
+}
+
 function mkChart(key, el, cfg) {
+  applyNetOnly(key, cfg);
   destroyChart(key);
   const old = document.getElementById(el);
   if (old) {
@@ -8302,6 +8327,33 @@ function renderChartTable() {
 let storeChartMode = 'store'; /* 'store' | 'total' */
 let lineMode = 'total';       /* 'own' = % lose vs sales store sendiri | 'total' = % lose vs grand total sales (default saat load) */
 
+/* ── Filter "Net Sales Saja" ── */
+window._netOnly = false;
+function netOnlyRefreshUI() {
+  const on = !!window._netOnly;
+  document.body.classList.toggle('net-only', on);
+  /* Mode garis % tidak relevan saat Net Sales saja */
+  const lmw = document.getElementById('line-mode-wrap');
+  if (lmw) {
+    lmw.style.opacity = (on || storeChartMode !== 'store') ? '0.35' : '1';
+    lmw.style.pointerEvents = (on || storeChartMode !== 'store') ? 'none' : 'auto';
+  }
+  const sub = document.getElementById('store-chart-subtitle');
+  if (sub && on) sub.textContent = 'BAR: NET SALES SAJA';
+}
+function netOnlySet(on, btn) {
+  window._netOnly = !!on;
+  document.querySelectorAll('.net-only-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  netOnlyRefreshUI();
+  /* Subtitle normal dikembalikan lewat storeSetMode, lalu render ulang chart yang aktif */
+  const btnMode = document.querySelector('.store-mode-btn.active');
+  if (!on && btnMode) storeSetMode(storeChartMode, btnMode);
+  if (storeChartMode === 'total') renderTrendCombo();
+  else if (storeChartMode === 'weekly') renderWeeklyChart();
+  else if (window._lastDashRows) renderDashboard(window._lastDashRows);
+}
+
 function lineSetMode(mode, btn) {
   lineMode = mode;
   document.querySelectorAll('#line-mode-own,#line-mode-total').forEach(b=>b.classList.remove('active'));
@@ -8312,6 +8364,7 @@ function lineSetMode(mode, btn) {
   if (sub) sub.textContent = mode === 'own'
     ? 'STACKED BAR · LINE: % LOSE/SALES STORE'
     : 'STACKED BAR · LINE: % LOSE STORE / TOTAL SALES SEMUA STORE';
+  netOnlyRefreshUI();
 
   /* Re-render store chart dengan mode baru */
   if (window._lastDashRows) {
@@ -8363,6 +8416,7 @@ function storeSetMode(mode, btn) {
     : mode==='total'
       ? 'Detail Sales vs Lose Sales — Total Bulanan'
       : 'Detail Sales vs Lose Sales — Mingguan';
+  netOnlyRefreshUI(); /* pertahankan tampilan filter Net Sales Saja */
 }
 
 /* ── Isi dropdown "Pilih Bulan" dengan periode (bulan+tahun) yang tersedia dari data mingguan ── */
