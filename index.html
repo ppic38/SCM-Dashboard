@@ -4742,7 +4742,14 @@ const labelPlugin = {
         ctx.font = 'bold 9px DM Mono, monospace';
         ctx.textAlign = 'center';
 
-        if (lbl === '__pct__' || lbl === '__kontrib__') {
+        if (ds._netLine) {
+          /* Mode Net Sales Saja: nilai Rp tepat di atas titik line */
+          const pos = el.tooltipPosition ? el.tooltipPosition() : {x: el.x, y: el.y};
+          ctx.fillStyle = ds._labelColor || '#fff';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(fmtRpChart(vRaw), pos.x, pos.y - 8);
+
+        } else if (lbl === '__pct__' || lbl === '__kontrib__') {
           /* % label: tepat di atas titik line */
           const pos = el.tooltipPosition ? el.tooltipPosition() : {x: el.x, y: el.y};
           ctx.fillStyle = ds._labelColor || ds._pctColor || '#e8ff47';
@@ -4794,7 +4801,19 @@ const NET_ONLY_KEYS = ['store','trendCombo','weekly'];
 function applyNetOnly(key, cfg) {
   if (!window._netOnly || !NET_ONLY_KEYS.includes(key) || !cfg.data || !cfg.data.datasets) return;
   cfg.data.datasets = cfg.data.datasets.filter(d => d.label === 'Sales');
+  /* Net Sales digambar sebagai LINE + label nilai Rp di tiap titik (digambar labelPlugin) */
+  cfg.data.datasets.forEach(d => {
+    d.type = 'line';
+    d.borderColor = '#47c8ff'; d.backgroundColor = 'transparent';
+    d.borderWidth = 2.5; d.tension = .3; d.fill = false;
+    d.cubicInterpolationMode = 'monotone'; /* kurva tidak melenceng di bawah 0 antar titik */
+    d.pointBackgroundColor = '#47c8ff'; d.pointRadius = 5; d.pointHoverRadius = 7;
+    delete d.borderRadius; delete d.borderSkipped;
+    d.order = 1; d._customLabels = true; d._netLine = true; d._labelColor = '#fff';
+  });
   const opt = cfg.options || {};
+  opt.interaction = { mode: 'index', intersect: false };
+  cfg.options = opt;
   if (opt.scales && opt.scales.yPct) opt.scales.yPct.display = false;
   const cb = opt.plugins && opt.plugins.tooltip && opt.plugins.tooltip.callbacks;
   if (cb && cb.afterBody) { const orig = cb.afterBody; cb.afterBody = tt => orig(tt).slice(0, 1); }
@@ -8339,7 +8358,7 @@ function netOnlyRefreshUI() {
     lmw.style.pointerEvents = (on || storeChartMode !== 'store') ? 'none' : 'auto';
   }
   const sub = document.getElementById('store-chart-subtitle');
-  if (sub && on) sub.textContent = 'BAR: NET SALES SAJA';
+  if (sub && on) sub.textContent = 'LINE: NET SALES SAJA';
 }
 function netOnlySet(on, btn) {
   window._netOnly = !!on;
